@@ -1,0 +1,102 @@
+<Context path="@PATH@" docBase="@DOCBASE@" debug="0" reloadable="1">
+
+    <Parameter name="log4j.configFile.path" value="log4j.properties"
+        override="false"/>
+
+    <!-- Connection pool to the Hydra service database -->
+    <Resource name="jdbc/@DBRESOURCENAME@" auth="Container" type="javax.sql.DataSource"/>
+    <ResourceParams name="jdbc/@DBRESOURCENAME@">
+        <parameter>
+            <name>factory</name>
+            <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </parameter>
+        <!-- allow 50 connections to be active, no more than 30 idle,
+             and wait 10000 ms for a new connection before aborting. -->
+        <parameter>
+            <name>maxActive</name>
+            <value>50</value>
+        </parameter>
+        <parameter>
+            <name>maxIdle</name>
+            <value>30</value>
+        </parameter>
+        <parameter>
+            <name>maxWait</name>
+            <value>10000</value>
+        </parameter>
+        <!-- Try to recover unused connections: 120 seconds idle and log when you do it
+        -->
+        <parameter>
+            <name>removeAbandoned</name>
+            <value>true</value>
+        </parameter>
+        <parameter>
+            <name>removeAbandonedTimeout</name>
+            <value>120</value>
+        </parameter>
+        <parameter>
+            <name>logAbandoned</name>
+            <value>true</value>
+        </parameter>
+
+        <!-- a user who has read/write access onto the db
+        -->
+        <parameter>
+            <name>username</name>
+            <value>@DBUSER@</value>
+        </parameter>
+        <!-- This is the password for this user -->
+        <parameter>
+            <name>password</name>
+            <value>@DBPASSWORD@</value>
+        </parameter>
+        <!-- this is the name of the SQL Driver class
+             e.g. org.gjt.mm.mysql.Driver
+          -->
+        <parameter>
+            <name>driverClassName</name>
+            <value>@DBDRIVERCLASS@</value>
+        </parameter>
+        <!-- the URL used for jdbc to connect to the database,
+             e.g. jdbc:mysql://localhost:3306/meta_db
+          -->
+        <parameter>
+            <name>url</name>
+            <value>@DBURL@</value>
+        </parameter>
+
+    </ResourceParams>
+
+    <Resource name="bean/config" auth="Container" type="org.glite.data.common.helpers.ConfigurationBean"/>
+    <ResourceParams name="bean/config">
+
+        <parameter>
+            <name>factory</name>
+            <value>org.glite.data.common.helpers.ImplicitContextConfigurationBeanFactory</value>
+        </parameter>
+
+	<!-- Service Helpers Configuration Parameters -->
+
+	<parameter>
+	    <name>attribute_helper_class</name>
+	    <value>@ATTRIBUTE_HELPER_CLASS@</value>
+	</parameter>
+	
+        <parameter>
+            <name>catalog_helper_class</name>
+            <value>@CATALOG_HELPER_CLASS@</value>
+	</parameter>
+			
+        <parameter>
+            <name>schema_helper_class</name>
+            <value>@SCHEMA_HELPER_CLASS@</value>
+        </parameter>
+
+        <parameter>
+            <name>authorization_helper_class</name>
+            <value>@AUTHORIZATION_HELPER_CLASS@</value>
+        </parameter>
+
+    </ResourceParams>
+
+</Context>

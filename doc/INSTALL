@@ -1,0 +1,79 @@
+Install Guide for the glite-data-hydra-service component.
+
+0. Prerequisites
+   =============
+   
+   We assume tomcat5 and MySQL are installed at the usual locations.
+
+
+1. Simple Configuration
+   ====================
+
+   Using the default values from the 
+   	$GLITE_LOCATION/etc/glite-data-hydra-service/config.properties
+   file, you only have to run the 
+   	$GLITE_LOCATION/sbin/glite-data-hydra-service-configure.sh
+   program and restart tomcat5, using "service tomcat5 restart".
+
+   For example, if $GLITE_LOCATION is "/opt/glite", then the command is
+
+     /opt/glite/sbin/glite-data-hydra-service-configure.sh
+
+   You can test the service by looking at the following URL:
+    
+     http://localhost:8080/default/glite-data-hydra-service
+
+   and use it, trying a test method:
+
+     http://localhost:8080/default/glite-data-hydra-service/services/Hydra?method=getVersion
+ 
+2. Multi-VO Configuration
+   ======================
+
+   Running the configurator without parameters sets up a service for the 'default'
+   virtual organization. If you need to set up multiple VOs or a non-default VO 
+   name, then you need to pass an extra parameter to the configure script:
+     
+      glite-data-hydra-service-configure.sh --vo egee
+
+   There will be another service instance configured for this VO, at the location
+    
+      http://localhost:8080/egee/glite-data-hydra-service
+
+   IMPORTANT: you have to edit the 'config.properties' file and add separate 
+   DBNAME for each VO:
+       
+       glite-data-hydra-service.default.DBNAME = hydra_default
+       glite-data-hydra-service.egee.DBNAME    = hydra
+
+   You may also override with VO specific values the other variables, however it 
+   is not necessary.
+
+
+3. Unconfigure
+   ===========
+
+   Run the VO specific unconfigure script:
+    
+     $GLITE_LOCATION/etc/glite-data-hydra-service/glite-data-hydra-service-<VO_name>.unconfigure
+
+   IMPORTANT: the unconfigure script will remove the database without any question!
+   Please edit the file or back up your database, if it has to be preserved!
+
+4. Explained
+   =========
+
+   The service needs a context.xml file for Tomcat. This is 
+   generated into the 'etc' directory and then copied to the tomcat
+   configuration directory: /etc/tomcat5/Catalina/localhost.
+
+   For the database connection the JDBC driver has to be copied into 
+   Tomcat's 'common/lib' directory. The jar files are not part of the
+   RPM (due to license restrictions), so the configuration script 
+   cannot copy them to the appropriate place, but it prints out the 
+   exact commands on how to do this by hand.
+
+   One can run the script only to instanciate the templates and print
+   the commands using the '--dryrun' option. This way one can do the
+   steps one-by-one to debug possible errors.
+

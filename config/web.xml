@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/j2ee/dtds/web-app_2.3.dtd">
+
+<web-app>
+    <display-name>gLite Hydra Service</display-name>
+
+    <!-- The Axis servlet that runs the web service submissions and query interface. This can be switcehd off
+         without affecting the other parts of the system.
+      -->
+    <servlet>
+        <servlet-name>AxisServlet</servlet-name>
+        <display-name>Apache-Axis Servlet</display-name>
+        <servlet-class>
+        org.apache.axis.transport.http.AxisServlet
+        </servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/servlet/AxisServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <!-- Default error page for this context. -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/404.html</location>
+    </error-page>
+
+    <!-- Declaration of container resources that the application needs.
+         These should generally NOT be changed.
+      -->
+
+    <!-- Database holding the request store. -->
+    <resource-ref>
+        <description>Hydra requeststore database</description>
+        <res-ref-name>jdbc/hydra</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
+    <resource-ref>
+        <description>Hydra configuration bean</description>
+        <res-ref-name>bean/config</res-ref-name>
+        <res-type>org.glite.data.common.helpers.ConfigurationBean</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
+</web-app>

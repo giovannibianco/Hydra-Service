@@ -1,0 +1,146 @@
+body { 
+	background: white;
+}
+
+A:link { color: black }
+A:visited { color: #856055 }
+A:active { color: red }
+
+H1 { 
+	color: #856055; 
+	font-family: sans-serif; 
+	text-align: center;
+	font-size: 24pt;
+}
+H2 { 
+	color: #856055; 
+	font-family: sans-serif;
+	text-align: left;
+	font-size: 18pt;
+}
+H3 { 
+	color: #856055; 
+	font-family: sans-serif;
+	text-align: left;
+	font-size: 14pt
+}
+
+P {
+	color: black;
+	font-family: sans-serif;
+	text-align: left;
+	font-size: 12pt;
+}
+
+emph {
+	color: #856055;
+	font-family: sans-serif;
+	text-align: left;
+	font-size: 12pt;
+}
+
+
+
+P.menuheading {
+	text-align: left;
+	font-weight: bold;
+	font-size: 10pt;
+	margin: 0pt;
+}
+
+UL.menu { 
+	font-family: sans-serif;
+	font-size: 10pt;
+	list-style-type: none;
+	margin-left: 6pt;   /* For IE. */
+	padding-left: 6pt;  /* For Mozilla. */
+	margin-top: 2pt;
+}
+
+UL.menu LI {
+	margin-top: 2pt;
+}
+
+DIV.footer { 
+	font-family: sans-serif;
+	font-size: 10pt;
+	font-style: italic;
+	color: #856055; 
+	text-align: left;
+	margin-top: 12pt;
+}
+
+IMG.header { 
+	vertical-align: middle;
+}
+
+IMG.logo {
+	vertical-align: middle;
+}
+
+TD.logo {
+	width: 150px;
+	text-align: center;
+}
+
+TD.header {
+        color: #856055;
+	font-family: sans-serif;
+	font-weight: bold;
+	font-size: 18pt;
+	text-align: left;
+	width: 30em;
+	padding-left: 12pt;
+}
+
+TD.logotext {
+	text-align: center;
+	background: #a58075;
+	border: solid thin black;
+}
+
+TD.navbar {
+	text-align: left;
+	background: #e5c0b5;
+	border: solid thin #856055;
+	padding-left: 12pt;
+	font-size: 10pt;
+	font-weight: bold;
+	vertical-align: middle;
+}
+
+TD.menu {
+	background: #e5c0b5;
+	font-family: sans-serif;
+	font-size: 10pt;
+	border: solid thin #856055;
+	width: 120;
+	padding: 3pt;
+	vertical-align: top;
+}
+
+TD.main {
+	font-family: sans-serif;
+	font-size: 12pt;
+	vertical-align: top;
+	padding-top: 12pt;
+	padding-left: 12pt;
+}
+
+TD.exception {
+	color: red;
+	font-style: bold;
+}
+
+TABLE.exception {
+	background-color: red;
+	color: yellow;
+	font-style: bold;
+}
+
+P.exception {
+	background-color: red;
+	color: yellow;
+	font-style: bold;
+}
+

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="loader" default="">
+<!-- Loads MySQL file. It is not standard format as we must add some block separators
+	-->
+    <property name="workspace.dir" value="../../../../" />
+    <import file="${workspace.dir}/org.glite/project/baseline.properties.xml"/>
+    <import file="${global.properties.file}"/>
+    <property file="${global.dependencies.file}"/>
+    <import file="${global.configure.options.file}"/>
+
+<!-- 
+  Please specify your settings in the user properties file
+  ($HOME/glite.build.properties) for the following items:
+    mysql.username			= username
+    mysql.password			= password
+    glite-data-hydra-service.DBURL = databaseurl
+ -->
+
+<target name="mysql_init">
+  <sql driver="org.gjt.mm.mysql.Driver"
+		url="${glite-data-hydra-service.DBURL}"
+		userid="${mysql.username}"
+		password="${mysql.password}"
+		onerror="continue"
+		keepformat="true"
+        classpathref="ext.mm-mysql.classpath"
+		>
+		
+  <fileset dir=".">
+    <include name="mysql-schema.sql"/>
+  </fileset>   
+
+</sql>
+</target>
+</project>
+
