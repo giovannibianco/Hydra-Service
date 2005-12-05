@@ -181,7 +181,11 @@
         </if>
         </target>      
 
-        <target name="webapp.local"/>
+        <target name="webapp.local">
+            <replaceregexp match="name=\&quot;MetadataCatalog\&quot;" replace="name=\&quot;Hydra\&quot;" flags="g">
+                <fileset dir="${module.webapp.dir}/WEB-INF" includes="server-config.wsdd"/>
+            </replaceregexp>
+        </target>
 
         <target name="tomcat.configure.local"/>
 
