@@ -15,14 +15,18 @@ import org.glite.data.catalog.service.StringPair;
 import org.glite.data.common.helpers.DBManager;
 import org.glite.data.hydra.helpers.AttributeHelper;
 import org.glite.data.hydra.helpers.MetadataHelper;
+import org.glite.data.hydra.helpers.authz.MySQLAuthorizationHelper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class MySQLAttributeHelper extends MetadataHelper implements AttributeHelper {
+
+public class MySQLAttributeHelper extends AttributeHelper {
     // Logger object
     private final static Logger m_log = Logger.getLogger(
             "org.glite.data.catalog.service.meta.mysql.MySQLAttributeHelper");
@@ -110,6 +114,7 @@ public class MySQLAttributeHelper extends MetadataHelper implements AttributeHel
         } finally {
             m_dbmanager.cleanupResources(p_stat);
             m_dbmanager.cleanupResources(conn);
+            m_dbmanager.cleanupResources(rs);
         }
 
         return attributes;
@@ -219,6 +224,80 @@ public class MySQLAttributeHelper extends MetadataHelper implements AttributeHel
             m_dbmanager.cleanupResources(p_stat);
             m_dbmanager.cleanupResources(conn);
         }
+    }
+
+    public String[] query(String query, String type, int limit, int offset)
+        throws InternalException {
+        m_log.debug("Entered query.");
+
+        // Database Objects
+        Connection conn = null;
+        PreparedStatement p_stat = null;
+        ResultSet rs = null;
+
+        // Internal objects
+        ArrayList entries = new ArrayList();
+
+        // Make the query
+        try {
+            conn = m_dbmanager.getConnection(false);
+
+            // Process the user VOMS attributes
+            List attrs = MySQLAuthorizationHelper.getAuthzAttributeList();
+            String attrsString = null;
+            if(attrs != null) {
+                if(attrs.size() > 0) {
+                    attrsString = "'" + attrs.get(0) + "'";
+                    for(int i=1; i < attrs.size(); i++) {
+                        attrsString += ",'" + attrs.get(i) + "'";
+                    }
+                }
+            }
+
+            String sql = "SELECT entry_name "
+                + "FROM t_entry T "
+                + "LEFT JOIN t_schema S ON S.schema_id = T.schema_id "
+                + "LEFT JOIN t_principal UP ON UP.principal_id = T.owner_id "
+                + "LEFT JOIN t_principal GP ON GP.principal_id = T.group_id "
+                + "WHERE S.schema_name = '" + query + "' "
+                + "  AND ( "
+                + "    ((T.other_perm & 4) = 4) "
+                + "    OR "
+                + "    (UP.principal_name = '" + MySQLAuthorizationHelper.getClientName() + "' AND (T.user_perm & 4) = 4) ";
+            // Add group permissions if VOMS attributes were exposed
+            if(attrsString != null) {
+                sql += " OR (GP.principal_name IN ('default-group') AND (T.group_perm & 4) = 4) ";
+            }
+            // Wrap up
+            sql += ") ORDER BY creation_time DESC ";
+            // Add limits if given
+            if(limit != -1) {
+                sql+= " LIMIT " + offset + ", " + limit;
+            }
+            m_log.debug("SQL:" + sql);
+
+            p_stat = m_dbmanager.prepareStatement(conn, sql);
+
+            // Execute query
+            rs = p_stat.executeQuery();
+
+            // Parse results
+            while(rs.next()) {
+                entries.add(rs.getString("entry_name"));
+            }
+            m_log.debug("Returning " + entries.size() + " entries.");
+        } catch (Exception sqle) {
+            m_log.debug("Failed to execute query. Exception was: " + sqle);
+            m_dbmanager.rollbackRegardless(conn);			
+            throw new InternalException("Failed to execute query on database.");
+        } finally {
+            m_dbmanager.cleanupResources(p_stat);
+            m_dbmanager.cleanupResources(conn);
+            m_dbmanager.cleanupResources(rs);
+        }
+
+        // Return the results
+        return (String[])entries.toArray(new String[] {});
     }
 
     private StringPair getEntryInfo(String entry) throws NotExistsException {
@@ -331,4 +410,5 @@ public class MySQLAttributeHelper extends MetadataHelper implements AttributeHel
     private String getAllAttributesSQLString(int entryID, String schemaName) {
         return "SELECT * FROM " + schemaName + " WHERE entry_id = " + entryID;
     }
+
 }

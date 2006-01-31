@@ -10,9 +10,16 @@ import org.glite.data.catalog.service.Perm;
 
 
 public class GliteUtils {
+    
     public static int convertPermToInt(Perm permission) {
-        int permInt = 0;
 
+        // Return no permissions if a null object was passed
+        if(permission == null) {
+            return 0;
+        }
+        
+        // Else convert the object into an int value
+        int permInt = 0;
         permInt += (1 * (permission.isPermission() ? 1 : 0));
         permInt += (2 * (permission.isRemove() ? 1 : 0));
         permInt += (4 * (permission.isRead() ? 1 : 0));

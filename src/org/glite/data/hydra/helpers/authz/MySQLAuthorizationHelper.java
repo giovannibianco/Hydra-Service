@@ -17,8 +17,10 @@ import org.glite.data.catalog.service.NotExistsException;
 import org.glite.data.catalog.service.Perm;
 import org.glite.data.catalog.service.Permission;
 import org.glite.data.catalog.service.PermissionEntry;
+import org.glite.data.common.helpers.ConfigurationBean;
 import org.glite.data.common.helpers.DBException;
 import org.glite.data.common.helpers.DBManager;
+import org.glite.data.common.helpers.JNDIBeanFetcher;
 import org.glite.data.hydra.GliteUtils;
 import org.glite.data.hydra.helpers.AuthorizationHelper;
 import org.glite.data.hydra.helpers.MetadataHelper;
@@ -34,20 +36,27 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NamingException;
 
-public class MySQLAuthorizationHelper extends MetadataHelper implements AuthorizationHelper {
+public class MySQLAuthorizationHelper extends AuthorizationHelper {
     // Logger object
     private final static Logger m_log = Logger.getLogger(
             "org.glite.data.catalog.service.meta.helpers.MySQLAuthorizationHelper");
 
-    // Default client dn
-    private String defaultClientDN = null;
-    private String defaultGroupName = null;
+    public static final String DEFAULT_CLIENT_DN = "default-dn";
+    public static final String DEFAULT_GROUP_NAME = "default-group";
+    public static final int DEFAULT_USER_PERM = 207;
+    public static final int DEFAULT_GROUP_PERM = 0;
+    public static final int DEFAULT_OTHER_PERM = 0;
+        
+    // Default client dn objects
+    public static String defaultClientDN = null;
+    public static String defaultGroupName = null;
 
-    // Default Permissions
-    private Perm defaultUserPerm = null;
-    private Perm defaultGroupPerm = null;
-    private Perm defaultOtherPerm = null;
+    // Default Permissions objects
+    public static Perm defaultUserPerm = null;
+    public static Perm defaultGroupPerm = null;
+    public static Perm defaultOtherPerm = null;
 
     /**
     * @param dbManager
@@ -55,20 +64,57 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
     public MySQLAuthorizationHelper(DBManager dbManager) {
         super(dbManager);
 
+        // Load service configuration object
+        ConfigurationBean config = null;
+        try {
+            config = (ConfigurationBean) JNDIBeanFetcher.fetchBean("config");
+        } catch (NamingException e) {
+            m_log.error("Error retrieving service configuration", e);
+        }
+
         // Set default user permissions
-        defaultUserPerm = GliteUtils.convertIntToPerm(207); // P/R/W/RM/SM/GM
+        String userPerm = config.get("default_user_permissions");
+        if(userPerm != null) {
+            defaultUserPerm = GliteUtils.convertIntToPerm(Integer.parseInt(userPerm));
+        } else {
+            defaultUserPerm = GliteUtils.convertIntToPerm(DEFAULT_USER_PERM);
+        }
 
         // Set default group permissions
-        defaultGroupPerm = GliteUtils.convertIntToPerm(68); // R/GM
+        String groupPerm = config.get("default_group_permissions");
+        if(groupPerm != null) {
+            defaultGroupPerm = GliteUtils.convertIntToPerm(Integer.parseInt(groupPerm));
+        } else {
+            defaultGroupPerm = GliteUtils.convertIntToPerm(DEFAULT_GROUP_PERM);
+        }
 
         // Set default other permissions
-        defaultOtherPerm = GliteUtils.convertIntToPerm(68); // R/GM
+        String otherPerm = config.get("default_other_permissions");
+        if(otherPerm != null) {
+            defaultOtherPerm = GliteUtils.convertIntToPerm(Integer.parseInt(otherPerm));
+        } else {
+            defaultOtherPerm = GliteUtils.convertIntToPerm(DEFAULT_OTHER_PERM);
+        }
 
         // Set default client DN
-        defaultClientDN = "default-dn"; //TODO: get this from conf
+        String defaultDN = config.get("default_dn");
+        if(defaultDN != null) {
+            defaultClientDN = defaultDN;
+        } else {
+            defaultClientDN = DEFAULT_CLIENT_DN;
+        }
 
         // Set default group name
-        defaultGroupName = "default-group"; //TODO: get this from conf
+        String defaultGroup = config.get("default_group");
+        if(defaultGroup != null) {
+            defaultGroupName = defaultGroup;
+        } else {
+            defaultGroupName = DEFAULT_GROUP_NAME;
+        }
+
+        m_log.info("DEFAULTS: DN='" + defaultClientDN + "'::GROUP='" + defaultGroupName + "'::USERPERMISSIONS=" 
+                + GliteUtils.convertPermToInt(defaultUserPerm) + "::GROUPPERMISSIONS=" + GliteUtils.convertPermToInt(defaultGroupPerm)
+                + "::OTHERPERMISSIONS=" + GliteUtils.convertPermToInt(defaultOtherPerm));
     }
 
     /* (non-Javadoc)
@@ -269,8 +315,8 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
         ResultSet rsAcl = null;
 
         // Internal Objects
-        String clientName = getClientName();
-        List principalList = getAuthzAttributeList();
+        String clientName = MySQLAuthorizationHelper.getClientName();
+        List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
         if(principalList == null) {
         	principalList = new ArrayList();
         }
@@ -366,7 +412,7 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
     /* (non-Javadoc)
     * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getClientDN()
     */
-    public String getClientName() throws InternalException {
+    public static String getClientName() throws InternalException {
         m_log.debug("Entered getClientName.");
 
         // Set the client name to default
@@ -388,7 +434,7 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getClientGroup()
      */
-    public String getClientPrimaryGroup() throws InternalException {
+    public static String getClientPrimaryGroup() throws InternalException {
         m_log.debug("Entered getClientPrimaryGroup.");
 
         String groupName = null;
@@ -416,10 +462,10 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
 
         // Create a new BasicPermission for current client
         BasicPermission basicPermission = new BasicPermission();
-        String clientName = getClientName();
+        String clientName = MySQLAuthorizationHelper.getClientName();
 
         basicPermission.setUserName(clientName);
-        basicPermission.setGroupName(getClientPrimaryGroup());
+        basicPermission.setGroupName(MySQLAuthorizationHelper.getClientPrimaryGroup());
         basicPermission.setUserPerm(defaultUserPerm);
         basicPermission.setGroupPerm(defaultGroupPerm);
         basicPermission.setOtherPerm(defaultOtherPerm);
@@ -427,13 +473,21 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
         return basicPermission;
     }
 
-    private SecurityContext getSecurityContext() {
+    public static List getAuthzAttributeList() {
+
+    	// Get list of attributes from the security context
+        SecurityContext sc = getSecurityContext();
+        return sc.getAuthorizedAttributes();
+        
+    }
+
+    private static SecurityContext getSecurityContext() {
         InitSecurityContext.init();
 
         return SecurityContext.getCurrentContext();
     }
 
-    private boolean checkPermPattern(Perm pattern, Perm perm) {
+    private static boolean checkPermPattern(Perm pattern, Perm perm) {
         //TODO: find a more clever way
         if (pattern.isRead() && !perm.isRead()) {
             return false;
@@ -466,7 +520,7 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
         return true;
     }
 
-    private boolean clientExposesAttribute(String attribute) {
+    private static boolean clientExposesAttribute(String attribute) {
         // Get list of attributes from the security context
         SecurityContext sc = getSecurityContext();
         List authzAttributes = sc.getAuthorizedAttributes();
@@ -479,11 +533,4 @@ public class MySQLAuthorizationHelper extends MetadataHelper implements Authoriz
         }
     }
     
-    private List getAuthzAttributeList() {
-
-    	// Get list of attributes from the security context
-        SecurityContext sc = getSecurityContext();
-        return sc.getAuthorizedAttributes();
-        
-    }
 }

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 // For example, MySQL will accept BOOL, but stores it as TINYINT(1)
 // If schema description is asked later, TINYINT(1) will be retrieved
 // Probably the best way is to restrict types to those actually used in the backend
-public class MySQLSchemaHelper extends MetadataHelper implements SchemaHelper {
+public class MySQLSchemaHelper extends SchemaHelper {
     // Logger object
     private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.mysql.MySQLSchemaHelper");
 

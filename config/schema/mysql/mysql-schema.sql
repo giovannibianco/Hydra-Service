@@ -67,3 +67,20 @@ CREATE TABLE t_acl (
 	PRIMARY KEY (entry_id, principal_id)
 ) TYPE=INNODB;
 
+
+--
+-- Default schema for Hydra keystore
+--  
+DROP TABLE IF EXISTS eds;
+CREATE TABLE eds (
+  entry_id      INT NOT NULL,
+  edscipher     VARCHAR(50),
+  edskey        VARCHAR(200),
+  edsiv         VARCHAR(200),
+  edskeyinfo    VARCHAR(200)
+) TYPE=INNODB;
+
+--
+-- Insert entry for eds schema
+--
+INSERT INTO t_schema (schema_name) VALUES ('eds');

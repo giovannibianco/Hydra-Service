@@ -75,28 +75,66 @@
             <value>org.glite.data.common.helpers.ImplicitContextConfigurationBeanFactory</value>
         </parameter>
 
-	<!-- Service Helpers Configuration Parameters -->
+    	<!-- Default permissions configuration -->
+        <parameter>
+            <name>default_dn</name>
+            <value>@DEFAULT_DN@</value>
+            <description>
+                Default user DN (distinguished name) to use if security is off
+            </description>
+        </parameter>
+        <parameter>
+            <name>default_group</name>
+            <value>@DEFAULT_GROUP@</value>
+            <description>
+                Default group DN (distinguished name) to use if one could not be retrieved
+            </description>
+        </parameter>
+	    <parameter>
+	        <name>default_user_permissions</name>
+    	    <value>@DEFAULT_USER_PERMISSIONS@</value>
+            <description>
+                Default user permissions assigned to new entries.
+                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
+                    Example: 207 (1+2+4+8+64+128) == all permissions
+            </description>
+    	</parameter>
+	    <parameter>
+    	    <name>default_group_permissions</name>
+	        <value>@DEFAULT_GROUP_PERMISSIONS@</value>
+            <description>
+                Default group permissions assigned to new entries.
+                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
+                    Example: 64 == get metadata only
+            </description>
+	    </parameter>
+    	<parameter>
+	        <name>default_other_permissions</name>
+	        <value>@DEFAULT_OTHER_PERMISSIONS@</value>
+            <description>
+                Default user permissions assigned to new entries.
+                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
+                    Example: 64 == get metadata only
+            </description>
+	    </parameter>    
 
-	<parameter>
-	    <name>attribute_helper_class</name>
-	    <value>@ATTRIBUTE_HELPER_CLASS@</value>
-	</parameter>
-	
+    	<!-- [ADVANCED] Implementation classes configuration -->
+    	<parameter>
+	        <name>attribute_helper_class</name>
+	        <value>@ATTRIBUTE_HELPER_CLASS@</value>
+    	</parameter>
         <parameter>
             <name>catalog_helper_class</name>
             <value>@CATALOG_HELPER_CLASS@</value>
-	</parameter>
-			
+	    </parameter>
         <parameter>
             <name>schema_helper_class</name>
             <value>@SCHEMA_HELPER_CLASS@</value>
         </parameter>
-
         <parameter>
             <name>authorization_helper_class</name>
             <value>@AUTHORIZATION_HELPER_CLASS@</value>
         </parameter>
-
     </ResourceParams>
 
 </Context>

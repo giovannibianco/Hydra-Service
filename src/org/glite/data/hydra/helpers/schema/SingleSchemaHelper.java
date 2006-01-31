@@ -12,10 +12,15 @@ import org.glite.data.catalog.service.Attribute;
 import org.glite.data.catalog.service.ExistsException;
 import org.glite.data.catalog.service.InvalidArgumentException;
 import org.glite.data.catalog.service.NotExistsException;
+import org.glite.data.common.helpers.DBManager;
 import org.glite.data.hydra.helpers.SchemaHelper;
 
+public class SingleSchemaHelper extends SchemaHelper {
 
-public class SingleSchemaHelper implements SchemaHelper {
+    public SingleSchemaHelper(DBManager dbManager) {
+        super(dbManager);
+    }
+    
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.SchemaHelper#addSchema(java.lang.String, org.glite.data.catalog.service.Attribute[])
      */

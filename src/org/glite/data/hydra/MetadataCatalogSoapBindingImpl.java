@@ -94,8 +94,7 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
      */
     public String[] query(String query, String type, int limit, int offset)
         throws InternalException, AuthorizationException, InvalidArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        return m_catalog.query(query, type, limit, offset);
     }
 
     /* (non-Javadoc)

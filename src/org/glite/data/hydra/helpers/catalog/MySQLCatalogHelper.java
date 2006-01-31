@@ -25,7 +25,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 
 
-public class MySQLCatalogHelper extends MetadataHelper implements CatalogHelper {
+public class MySQLCatalogHelper extends CatalogHelper {
     // Logger object
     private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.mysql.MySQLCatalogHelper");
 
@@ -43,6 +43,16 @@ public class MySQLCatalogHelper extends MetadataHelper implements CatalogHelper 
         throws InternalException {
         m_log.debug("Entered addEntries.");
 
+        // Check for valid permission and entries
+        if(entries == null) {
+            m_log.debug("No entries given... nothing to be added.");
+            return;
+        }
+        if(basicPermission == null) {
+            m_log.error("Cannot add entries as basic permission given was null.");
+            return;
+        }
+         
         // Database Objects
         Connection conn = null;
         PreparedStatement p_stat_entry = null;

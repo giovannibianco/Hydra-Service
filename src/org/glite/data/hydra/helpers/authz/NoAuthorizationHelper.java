@@ -13,35 +13,15 @@ import org.glite.data.catalog.service.InvalidArgumentException;
 import org.glite.data.catalog.service.NotExistsException;
 import org.glite.data.catalog.service.Perm;
 import org.glite.data.catalog.service.PermissionEntry;
+import org.glite.data.common.helpers.DBManager;
 import org.glite.data.hydra.helpers.AuthorizationHelper;
 
+public class NoAuthorizationHelper extends AuthorizationHelper {
 
-public class NoAuthorizationHelper implements AuthorizationHelper {
-    /* (non-Javadoc)
-     * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getClientDN()
-     */
-    public String getClientName() throws InternalException {
-        // TODO Auto-generated method stub
-        return null;
+    public NoAuthorizationHelper(DBManager dbManager) {
+        super(dbManager);
     }
-
-    /* (non-Javadoc)
-     * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getClientPrimaryGroup()
-     */
-    public String getClientPrimaryGroup() throws InternalException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getBasicPermission()
-     */
-    public BasicPermission getDefaultBasicPermission()
-        throws InternalException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+    
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#setPermission(org.glite.data.catalog.service.PermissionEntry[])
      */

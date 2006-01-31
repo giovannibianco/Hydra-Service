@@ -39,7 +39,7 @@ import javax.naming.NamingException;
 public class MetadataCatalogImpl {
     // Logger object
     private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.MetadataCatalogImpl");
-    private static final String m_dbpool = "jdbc/meta";
+    private static final String m_dbpool = "jdbc/hydra";
 
     // DB interaction objects
     private DBManager m_dbmanager = null;
@@ -374,10 +374,22 @@ public class MetadataCatalogImpl {
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#query(java.lang.String[], java.lang.String)
      */
-    public String[] query(String[] schemaNames, String query)
+    public String[] query(String query, String type, int limit, int offset)
         throws InternalException, AuthorizationException, InvalidArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        
+        // Check for query type validity
+        // TODO: implement
+
+        // Check for query validity
+        // TODO: implement
+        
+        // Check for limit/offset validity
+        if((limit >= 0 && offset < 0) || (limit < 0 && offset >=0)) {
+            throw new InvalidArgumentException("Invalid offset/limit pair given. Either give both or none.");
+        }
+
+        // Make the query
+        return m_attr_helper.query(query, type, limit, offset);
     }
 
     /* (non-Javadoc)

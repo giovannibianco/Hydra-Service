@@ -10,14 +10,29 @@ import org.glite.data.catalog.service.Attribute;
 import org.glite.data.catalog.service.InternalException;
 import org.glite.data.catalog.service.NotExistsException;
 
+import org.glite.data.common.helpers.DBManager;
 
-public interface AttributeHelper {
+public abstract class AttributeHelper extends MetadataHelper {
+
+    public AttributeHelper(DBManager dbManager) {
+        super(dbManager);
+    }
+    
     public Attribute[] getAttributes(String entry, String[] attributeNames)
-        throws NotExistsException, InternalException;
+        throws NotExistsException, InternalException {
+        return new Attribute[] { };
+    }
 
     public void setAttributes(String entry, Attribute[] attributes)
-        throws NotExistsException, InternalException;
+        throws NotExistsException, InternalException {
+    }
 
     public void clearAttributes(String entry, String[] attributeNames)
-        throws NotExistsException, InternalException;
+        throws NotExistsException, InternalException {
+    }
+
+    public String[] query(String query, String type, int limit, int offset)
+        throws InternalException {
+        return new String[] { };
+    }
 }

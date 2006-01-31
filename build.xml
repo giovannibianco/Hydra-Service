@@ -141,6 +141,11 @@
             <filter token="DBURL" value="${glite-data-hydra-service.DBURL}"/>
 	    
 	    <!-- Service Configuration related filters -->
+            <filter token="DEFAULT_DN" value="${glite-data-hydra-service.DEFAULT_DN}"/>
+            <filter token="DEFAULT_GROUP" value="${glite-data-hydra-service.DEFAULT_GROUP}"/>
+            <filter token="DEFAULT_USER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_USER_PERMISSIONS}"/>
+            <filter token="DEFAULT_GROUP_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_GROUP_PERMISSIONS}"/>
+            <filter token="DEFAULT_OTHER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_OTHER_PERMISSIONS}"/>
             <filter token="ATTRIBUTE_HELPER_CLASS" value="${glite-data-hydra-service.ATTRIBUTE_HELPER_CLASS}"/>
             <filter token="CATALOG_HELPER_CLASS" value="${glite-data-hydra-service.CATALOG_HELPER_CLASS}"/>
             <filter token="SCHEMA_HELPER_CLASS" value="${glite-data-hydra-service.SCHEMA_HELPER_CLASS}"/>

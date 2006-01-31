@@ -11,14 +11,28 @@ import org.glite.data.catalog.service.InternalException;
 import org.glite.data.catalog.service.InvalidArgumentException;
 import org.glite.data.catalog.service.StringPair;
 
+import org.glite.data.common.helpers.DBManager;
 
-public interface CatalogHelper {
-    public void checkEntryValidity(String entry) throws InvalidArgumentException, InternalException;
+public abstract class CatalogHelper extends MetadataHelper {
 
-    public String[] getEntries(String pattern) throws InternalException;
+    public CatalogHelper(DBManager dbManager) {
+        super(dbManager);
+    }
+
+    public void checkEntryValidity(String entry) 
+        throws InvalidArgumentException, InternalException {
+    }
+
+    public String[] getEntries(String pattern) 
+        throws InternalException {
+        return new String[] { };
+    }
 
     public void addEntries(StringPair[] entries, BasicPermission basicPermission)
-        throws InternalException;
+        throws InternalException {
+    }
 
-    public void removeEntries(String[] entries) throws InternalException;
+    public void removeEntries(String[] entries) 
+        throws InternalException {
+    }
 }
