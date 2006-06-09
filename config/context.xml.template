@@ -135,6 +135,14 @@
             <name>authorization_helper_class</name>
             <value>@AUTHORIZATION_HELPER_CLASS@</value>
         </parameter>
+        <parameter>
+            <name>vomsdir</name>
+            <value>@VOMSDIR@</value>
+            <description>
+                Location of the trusted VOMS server certificates,
+                by default '/etc/grid-security/vomsdir/*.pem'.
+            </description>
+        </parameter>
     </ResourceParams>
 
 </Context>

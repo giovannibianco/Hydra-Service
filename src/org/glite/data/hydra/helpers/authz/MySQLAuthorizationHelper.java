@@ -23,9 +23,12 @@ import org.glite.data.common.helpers.DBManager;
 import org.glite.data.common.helpers.JNDIBeanFetcher;
 import org.glite.data.hydra.GliteUtils;
 import org.glite.data.hydra.helpers.AuthorizationHelper;
-import org.glite.data.hydra.helpers.MetadataHelper;
 
 import org.glite.security.SecurityContext;
+import org.glite.security.util.DNHandler;
+import org.glite.security.voms.VOMSAttribute;
+import org.glite.security.voms.VOMSValidator;
+import org.glite.security.voms.BasicVOMSTrustStore;
 import org.glite.security.util.axis.InitSecurityContext;
 
 import java.sql.Connection;
@@ -112,9 +115,17 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             defaultGroupName = DEFAULT_GROUP_NAME;
         }
 
+        // Set vomsdir location
+        String vomsdir = config.get("vomsdir");
+        if((vomsdir != null) && (! vomsdir.equals("@VOMSDIR@"))) {
+            VOMSValidator.setTrustStore(new BasicVOMSTrustStore(vomsdir, 300000));
+        }
+
+
         m_log.info("DEFAULTS: DN='" + defaultClientDN + "'::GROUP='" + defaultGroupName + "'::USERPERMISSIONS=" 
                 + GliteUtils.convertPermToInt(defaultUserPerm) + "::GROUPPERMISSIONS=" + GliteUtils.convertPermToInt(defaultGroupPerm)
-                + "::OTHERPERMISSIONS=" + GliteUtils.convertPermToInt(defaultOtherPerm));
+                + "::OTHERPERMISSIONS=" + GliteUtils.convertPermToInt(defaultOtherPerm)
+                + "::vomsdir=" + vomsdir);
     }
 
     /* (non-Javadoc)
@@ -179,14 +190,14 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                 p_stat_acl_scratch.addBatch();
 
                 // Add new entries in ACL
-                for (int j = 0; i < acl.length; i++) {
-                    m_log.debug("\tNew ACL (entry: " + entry + "; principal: " + acl[i].getPrincipal());
+                for (int j = 0; j < acl.length; j++) {
+                    m_log.debug("\tNew ACL (entry: " + entry + "; principal: " + acl[j].getPrincipal());
 
                     // Add the acl entry
-                    Perm perm = acl[i].getPrincipalPerm();
+                    Perm perm = acl[j].getPrincipalPerm();
                     p_stat_acl.setInt(1, GliteUtils.convertPermToInt(perm));
                     p_stat_acl.setString(2, entry);
-                    p_stat_acl.setString(3, acl[i].getPrincipal());
+                    p_stat_acl.setString(3, acl[j].getPrincipal());
                     p_stat_acl.addBatch();
                 }
             }
@@ -317,9 +328,6 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         // Internal Objects
         String clientName = MySQLAuthorizationHelper.getClientName();
         List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
-        if(principalList == null) {
-        	principalList = new ArrayList();
-        }
     	principalList.add(clientName); // add the client dn to the list        	
 
         // Prepare the basic permissions sql string
@@ -366,7 +374,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
                 if (clientName.equals(ownerPrincipal) && checkPermPattern(patternPerm, userPerm)) {
                     basicPermission = true;
-                } else if (clientExposesAttribute(groupPrincipal) && checkPermPattern(patternPerm, groupPerm)) {
+                } else if (principalList.contains(groupPrincipal) && checkPermPattern(patternPerm, groupPerm)) {
                     basicPermission = true;
                 } else if (checkPermPattern(patternPerm, otherPerm)) {
                     basicPermission = true;
@@ -419,11 +427,13 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         String clientName = null;
 
         // Get the security context
-        SecurityContext sc = getSecurityContext();
+        InitSecurityContext.init();
+        SecurityContext sc = SecurityContext.getCurrentContext();
 
         // Update the client name if one is available
-        clientName = sc.getClientName();
+        clientName = DNHandler.getDN(sc.getClientName()).getX500();
 
+        m_log.debug("Exiting getClientName: " + clientName);
         if (clientName != null) {
             return clientName;
         } else {
@@ -440,16 +450,18 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         String groupName = null;
 
         // Get list of attributes from the security context
-        SecurityContext sc = getSecurityContext();
-        List authzAttributes = sc.getAuthorizedAttributes();
+        List authzAttributes = getAuthzAttributeList();
 
         // Set the group name
-        if ((authzAttributes != null) && (authzAttributes.get(0) != null)) {
+        try {
             groupName = (String) authzAttributes.get(0);
-        } else {
+        } catch (NullPointerException e) {
+            groupName = defaultGroupName;
+        } catch (IndexOutOfBoundsException e) {
             groupName = defaultGroupName;
         }
 
+        m_log.debug("Exiting getClientPrimaryGroup: " + groupName);
         return groupName;
     }
 
@@ -463,9 +475,10 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         // Create a new BasicPermission for current client
         BasicPermission basicPermission = new BasicPermission();
         String clientName = MySQLAuthorizationHelper.getClientName();
+        String primaryGroup = MySQLAuthorizationHelper.getClientPrimaryGroup();
 
         basicPermission.setUserName(clientName);
-        basicPermission.setGroupName(MySQLAuthorizationHelper.getClientPrimaryGroup());
+        basicPermission.setGroupName(primaryGroup);
         basicPermission.setUserPerm(defaultUserPerm);
         basicPermission.setGroupPerm(defaultGroupPerm);
         basicPermission.setOtherPerm(defaultOtherPerm);
@@ -474,17 +487,29 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
     }
 
     public static List getAuthzAttributeList() {
+        m_log.debug("Entered getAuthzAttributeList.");
 
-    	// Get list of attributes from the security context
-        SecurityContext sc = getSecurityContext();
-        return sc.getAuthorizedAttributes();
-        
-    }
+        List clientAttributes = new ArrayList();
 
-    private static SecurityContext getSecurityContext() {
-        InitSecurityContext.init();
+        try {
+            SecurityContext sc = SecurityContext.getCurrentContext();
+            
+            List vomsCerts = sc.getVOMSValidator().validate().getVOMSAttributes();
+            m_log.debug("getAuthzAttributeList voms cert number: " + vomsCerts.size());
 
-        return SecurityContext.getCurrentContext();
+            for (int i = 0; i < vomsCerts.size(); i++) {
+                List vomsAttributes = ((VOMSAttribute) vomsCerts.get(i)).getFullyQualifiedAttributes();
+                m_log.debug("getAuthzAttributeList VOMS Attributes: " + vomsAttributes);
+                clientAttributes.addAll(vomsAttributes);
+            }
+
+            return clientAttributes;
+        } catch (NullPointerException e) {
+            return new ArrayList();
+        } catch (java.lang.IllegalArgumentException e) {
+            return new ArrayList();
+        }
+    
     }
 
     private static boolean checkPermPattern(Perm pattern, Perm perm) {
@@ -520,17 +545,4 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         return true;
     }
 
-    private static boolean clientExposesAttribute(String attribute) {
-        // Get list of attributes from the security context
-        SecurityContext sc = getSecurityContext();
-        List authzAttributes = sc.getAuthorizedAttributes();
-
-        // Check if attribute given is in the list
-        if (authzAttributes != null) {
-            return authzAttributes.contains(attribute);
-        } else {
-            return false;
-        }
-    }
-    
 }
