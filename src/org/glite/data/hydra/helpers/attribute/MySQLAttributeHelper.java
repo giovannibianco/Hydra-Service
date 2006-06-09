@@ -14,7 +14,6 @@ import org.glite.data.catalog.service.NotExistsException;
 import org.glite.data.catalog.service.StringPair;
 import org.glite.data.common.helpers.DBManager;
 import org.glite.data.hydra.helpers.AttributeHelper;
-import org.glite.data.hydra.helpers.MetadataHelper;
 import org.glite.data.hydra.helpers.authz.MySQLAuthorizationHelper;
 
 import java.sql.Connection;

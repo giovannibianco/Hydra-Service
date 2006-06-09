@@ -14,14 +14,12 @@ import org.glite.data.catalog.service.InternalException;
 import org.glite.data.catalog.service.InvalidArgumentException;
 import org.glite.data.catalog.service.NotExistsException;
 import org.glite.data.common.helpers.DBManager;
-import org.glite.data.hydra.helpers.MetadataHelper;
 import org.glite.data.hydra.helpers.MySQLUtils;
 import org.glite.data.hydra.helpers.SchemaHelper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 
 import java.util.ArrayList;
 

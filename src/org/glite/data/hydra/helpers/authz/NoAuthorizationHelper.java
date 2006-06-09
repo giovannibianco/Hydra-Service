@@ -7,7 +7,6 @@
 package org.glite.data.hydra.helpers.authz;
 
 import org.glite.data.catalog.service.AuthorizationException;
-import org.glite.data.catalog.service.BasicPermission;
 import org.glite.data.catalog.service.InternalException;
 import org.glite.data.catalog.service.InvalidArgumentException;
 import org.glite.data.catalog.service.NotExistsException;

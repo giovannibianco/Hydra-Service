@@ -15,7 +15,6 @@ import org.glite.data.catalog.service.StringPair;
 import org.glite.data.common.helpers.DBManager;
 import org.glite.data.hydra.GliteUtils;
 import org.glite.data.hydra.helpers.CatalogHelper;
-import org.glite.data.hydra.helpers.MetadataHelper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
