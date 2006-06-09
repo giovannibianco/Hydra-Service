@@ -6,7 +6,7 @@
 
 package org.glite.data.hydra.helpers;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -26,8 +26,7 @@ public class MySQLUtils {
 		}		
 		
 		// Check for reserved words
-		ArrayList reservedList = new ArrayList();
-		if(reservedList.contains(tableName.toUpperCase())) {
+		if(Arrays.binarySearch(reservedWords, tableName.toUpperCase()) >= 0) {
 			return false;
 		}
 		
