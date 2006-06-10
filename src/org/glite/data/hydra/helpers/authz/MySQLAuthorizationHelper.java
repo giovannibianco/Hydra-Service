@@ -168,13 +168,17 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             for (int i = 0; i < permissions.length; i++) {
                 String entry = permissions[i].getItem();
                 Permission permission = permissions[i].getPermission();
-                ACLEntry[] acl = permission.getAcl();
+                
 
-                // Add the principal (or at least try)
-                p_stat_principal.setString(1, acl[i].getPrincipal());
+                // Add the user and group principals
+                p_stat_principal.setString(1, permission.getUserName());
                 p_stat_principal.addBatch();
-
-                m_log.debug("New Basic Permissions (entry: " + entry + "; owner: " + permission.getUserName());
+                p_stat_principal.setString(1, permission.getGroupName());
+                p_stat_principal.addBatch();
+                
+                m_log.debug("New Basic Permissions (entry: " + entry + 
+                            "; owner: " + permission.getUserName() +
+                            "/" + permission.getGroupName());
 
                 // Update basic permissions for entry
                 p_stat_basic_perm.setInt(1, GliteUtils.convertPermToInt(permission.getUserPerm()));
@@ -190,15 +194,22 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                 p_stat_acl_scratch.addBatch();
 
                 // Add new entries in ACL
-                for (int j = 0; j < acl.length; j++) {
-                    m_log.debug("\tNew ACL (entry: " + entry + "; principal: " + acl[j].getPrincipal());
+                ACLEntry[] acl = permission.getAcl();
+                if (acl != null) {
+                    for (int j = 0; j < acl.length; j++) {
+                        m_log.debug("\tNew ACL (entry: " + entry + "; principal: " + acl[j].getPrincipal());
 
-                    // Add the acl entry
-                    Perm perm = acl[j].getPrincipalPerm();
-                    p_stat_acl.setInt(1, GliteUtils.convertPermToInt(perm));
-                    p_stat_acl.setString(2, entry);
-                    p_stat_acl.setString(3, acl[j].getPrincipal());
-                    p_stat_acl.addBatch();
+                        // Add the ACL principal
+                        p_stat_principal.setString(1, acl[j].getPrincipal());
+                        p_stat_principal.addBatch();
+
+                        // Add the acl entry
+                        Perm perm = acl[j].getPrincipalPerm();
+                        p_stat_acl.setInt(1, GliteUtils.convertPermToInt(perm));
+                        p_stat_acl.setString(2, entry);
+                        p_stat_acl.setString(3, acl[j].getPrincipal());
+                        p_stat_acl.addBatch();
+                    }
                 }
             }
 
