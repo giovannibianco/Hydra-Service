@@ -203,7 +203,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                         p_stat_principal.setString(1, acl[j].getPrincipal());
                         p_stat_principal.addBatch();
 
-                        // Add the acl entry
+                        // Add the ACL entry
                         Perm perm = acl[j].getPrincipalPerm();
                         p_stat_acl.setInt(1, GliteUtils.convertPermToInt(perm));
                         p_stat_acl.setString(2, entry);
