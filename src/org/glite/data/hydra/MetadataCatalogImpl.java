@@ -404,8 +404,10 @@ public class MetadataCatalogImpl {
             entries[i] = permissions[i].getItem();
         }
 
-        // Check if user is allowed to change permissions for entry
-        //TODO: implement
+        // Check if user is allowed to change permissions for entries
+        Perm patternPerm = GliteUtils.convertIntToPerm(1);
+        m_authz_helper.checkPermission(entries, patternPerm);
+        
         // Set the permissions
         m_authz_helper.setPermission(permissions);
     }
@@ -415,8 +417,10 @@ public class MetadataCatalogImpl {
      */
     public PermissionEntry[] getPermission(String[] items)
         throws InternalException, AuthorizationException, NotExistsException {
-        // Check if user is allowed to get permissions
-        //TODO: implement
+        // Check if user is allowed to get permissions for items
+        Perm patternPerm = GliteUtils.convertIntToPerm(32);
+        m_authz_helper.checkPermission(items, patternPerm);
+
         // Get the permissions
         return m_authz_helper.getPermission(items);
     }

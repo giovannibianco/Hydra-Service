@@ -95,8 +95,8 @@
     	    <value>@DEFAULT_USER_PERMISSIONS@</value>
             <description>
                 Default user permissions assigned to new entries.
-                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
-                    Example: 207 (1+2+4+8+64+128) == all permissions
+                Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
+                    Example: 239 (1+2+4+8+32+64+128) == all permissions, except exec
             </description>
     	</parameter>
 	    <parameter>
@@ -104,7 +104,7 @@
 	        <value>@DEFAULT_GROUP_PERMISSIONS@</value>
             <description>
                 Default group permissions assigned to new entries.
-                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
+                Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
                     Example: 64 == get metadata only
             </description>
 	    </parameter>
@@ -113,7 +113,7 @@
 	        <value>@DEFAULT_OTHER_PERMISSIONS@</value>
             <description>
                 Default user permissions assigned to new entries.
-                Pattern: P(1); RM(2); R(4); W(8); GM(64); SM(128);
+                Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
                     Example: 64 == get metadata only
             </description>
 	    </parameter>    

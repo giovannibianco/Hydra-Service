@@ -359,7 +359,9 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         // Check permissions
         try {
             conn = m_dbmanager.getConnection(false);
+            m_log.debug("checkPermission basic SQL query: " + sqlBasicPerm);
             p_stat_basic_perm = m_dbmanager.prepareStatement(conn, sqlBasicPerm);
+            m_log.debug("checkPermission ACL SQL query: " + sqlACL);
             p_stat_acl = m_dbmanager.prepareStatement(conn, sqlACL);
 
             // Iterate through entries
@@ -384,10 +386,15 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                 boolean basicPermission = false;
 
                 if (clientName.equals(ownerPrincipal) && checkPermPattern(patternPerm, userPerm)) {
+                    m_log.debug("user: clinentName == ownerPrincipal (" + clientName + ") and " 
+                            + patternPerm + " matches " + userPerm);
                     basicPermission = true;
                 } else if (principalList.contains(groupPrincipal) && checkPermPattern(patternPerm, groupPerm)) {
+                    m_log.debug("group: principalList.contains(" + groupPrincipal + ") and " 
+                            + patternPerm + " matches " + groupPerm);
                     basicPermission = true;
                 } else if (checkPermPattern(patternPerm, otherPerm)) {
+                    m_log.debug("other: " + patternPerm + " matches " + otherPerm);
                     basicPermission = true;
                 }
 
@@ -525,6 +532,10 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
     private static boolean checkPermPattern(Perm pattern, Perm perm) {
         //TODO: find a more clever way
+        if (pattern.isPermission() && !perm.isPermission()) {
+            return false;
+        }
+        
         if (pattern.isRead() && !perm.isRead()) {
             return false;
         }
