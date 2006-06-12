@@ -3,15 +3,21 @@ Install Guide for the glite-data-hydra-service component.
 0. Prerequisites
    =============
    
-   We assume tomcat5 and MySQL are installed at the usual locations.
-
+   We assume tomcat5 and MySQL are installed at the usual locations,
+   CA certificates, VOMS server certificates are at the proper locations
+   and Tomcat is configured to use them via the glite-security-trustmanager
+   package.
 
 1. Simple Configuration
    ====================
 
-   Using the default values from the 
-   	$GLITE_LOCATION/etc/glite-data-hydra-service/config.properties
-   file, you only have to run the 
+   Please copy the 
+    $GLITE_LOCATION/etc/glite-data-hydra-service/config.properties.example
+   to
+    $GLITE_LOCATION/etc/glite-data-hydra-service/config.properties
+   and edit the properties (for example DB username and password).
+
+   Using the default values from this file, you only have to run the 
    	$GLITE_LOCATION/sbin/glite-data-hydra-service-configure.sh
    program and restart tomcat5, using "service tomcat5 restart".
 
@@ -19,14 +25,19 @@ Install Guide for the glite-data-hydra-service component.
 
      /opt/glite/sbin/glite-data-hydra-service-configure.sh
 
+   If the current user cannot became a database administrator without
+   typing a password, then please use the --withpass option:
+
+     /opt/glite/sbin/glite-data-hydra-service-configure.sh --withpass
+
    You can test the service by looking at the following URL:
     
-     http://localhost:8080/default/glite-data-hydra-service
+     https://localhost:8443/default/glite-data-hydra-service
 
    and use it, trying a test method:
 
-     http://localhost:8080/default/glite-data-hydra-service/services/Hydra?method=getVersion
- 
+     https://localhost:8443/default/glite-data-hydra-service/services/Hydra?method=getVersion
+
 2. Multi-VO Configuration
    ======================
 
@@ -38,7 +49,7 @@ Install Guide for the glite-data-hydra-service component.
 
    There will be another service instance configured for this VO, at the location
     
-      http://localhost:8080/egee/glite-data-hydra-service
+      https://localhost:8443/egee/glite-data-hydra-service
 
    IMPORTANT: you have to edit the 'config.properties' file and add separate 
    DBNAME for each VO:
@@ -73,7 +84,7 @@ Install Guide for the glite-data-hydra-service component.
    cannot copy them to the appropriate place, but it prints out the 
    exact commands on how to do this by hand.
 
-   One can run the script only to instanciate the templates and print
+   One can run the script only to instantiate the templates and print
    the commands using the '--dryrun' option. This way one can do the
    steps one-by-one to debug possible errors.
 
