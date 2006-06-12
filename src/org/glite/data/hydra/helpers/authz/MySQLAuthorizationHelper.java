@@ -60,6 +60,10 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
     public static Perm defaultUserPerm = null;
     public static Perm defaultGroupPerm = null;
     public static Perm defaultOtherPerm = null;
+    
+    // Service level authorization attributes
+    public static String createVomsAttribute = null;
+    public static String adminVomsAttribute  = null;
 
     /**
     * @param dbManager
@@ -115,6 +119,20 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             defaultGroupName = DEFAULT_GROUP_NAME;
         }
 
+        // Set create attribute
+        createVomsAttribute = config.get("create_voms_attribute");
+        if((createVomsAttribute != null) && 
+           ("".equals(createVomsAttribute) || "@CREATE_VOMS_ATTRIBUTE@".equals(createVomsAttribute))) {
+            createVomsAttribute = null;
+        }
+
+        // Set admin attribute
+        adminVomsAttribute = config.get("admin_voms_attribute");
+        if((adminVomsAttribute != null) && 
+           ("".equals(adminVomsAttribute) || "@ADMIN_VOMS_ATTRIBUTE@".equals(adminVomsAttribute))) {
+            adminVomsAttribute = null;
+        }
+        
         // Set vomsdir location
         String vomsdir = config.get("vomsdir");
         if((vomsdir != null) && (! vomsdir.equals("@VOMSDIR@"))) {
@@ -125,6 +143,8 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         m_log.info("DEFAULTS: DN='" + defaultClientDN + "'::GROUP='" + defaultGroupName + "'::USERPERMISSIONS=" 
                 + GliteUtils.convertPermToInt(defaultUserPerm) + "::GROUPPERMISSIONS=" + GliteUtils.convertPermToInt(defaultGroupPerm)
                 + "::OTHERPERMISSIONS=" + GliteUtils.convertPermToInt(defaultOtherPerm)
+                + "::CREATE=" + createVomsAttribute
+                + "::ADMIN=" + adminVomsAttribute
                 + "::vomsdir=" + vomsdir);
     }
 
@@ -339,7 +359,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         // Internal Objects
         String clientName = MySQLAuthorizationHelper.getClientName();
         List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
-    	principalList.add(clientName); // add the client dn to the list        	
+    	principalList.add(clientName); // add the client dn to the list       
 
         // Prepare the basic permissions sql string
         String sqlBasicPerm = "SELECT P1.principal_name AS owner_name, P2.principal_name AS group_name, E.user_perm, E.group_perm, E.other_perm" +
@@ -359,9 +379,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         // Check permissions
         try {
             conn = m_dbmanager.getConnection(false);
-            m_log.debug("checkPermission basic SQL query: " + sqlBasicPerm);
             p_stat_basic_perm = m_dbmanager.prepareStatement(conn, sqlBasicPerm);
-            m_log.debug("checkPermission ACL SQL query: " + sqlACL);
             p_stat_acl = m_dbmanager.prepareStatement(conn, sqlACL);
 
             // Iterate through entries
@@ -372,7 +390,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
                 if (!rsbp.next()) {
                     m_log.error("The entry could not be found in the database (but it should have).");
-                    throw new NotExistsException("The entry could not be found in the database."); //TODO: check
+                    throw new NotExistsException("The entry could not be found in the database.");
                 }
 
                 m_log.debug("checking basic permissions.");
@@ -386,15 +404,10 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                 boolean basicPermission = false;
 
                 if (clientName.equals(ownerPrincipal) && checkPermPattern(patternPerm, userPerm)) {
-                    m_log.debug("user: clinentName == ownerPrincipal (" + clientName + ") and " 
-                            + patternPerm + " matches " + userPerm);
                     basicPermission = true;
                 } else if (principalList.contains(groupPrincipal) && checkPermPattern(patternPerm, groupPerm)) {
-                    m_log.debug("group: principalList.contains(" + groupPrincipal + ") and " 
-                            + patternPerm + " matches " + groupPerm);
                     basicPermission = true;
                 } else if (checkPermPattern(patternPerm, otherPerm)) {
-                    m_log.debug("other: " + patternPerm + " matches " + otherPerm);
                     basicPermission = true;
                 }
 
@@ -434,10 +447,28 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             m_dbmanager.cleanupResources(conn);
         }
     }
+    
+    public void checkSchemaPermission(String schema, Perm patternPerm)
+        throws AuthorizationException, InternalException {
+        m_log.debug("Entered checkSchemaPermission.");
+        
+        // Internal representation of the client's attributes
+        String clientName = MySQLAuthorizationHelper.getClientName();
+        List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
+        principalList.add(clientName); // add the client dn to the list
+        
+        // TODO: implement these tests as permissions on schema objects
+        if(patternPerm.isWrite()) {
+            if((createVomsAttribute != null) && (!principalList.contains(createVomsAttribute))) {
+                throw new AuthorizationException("client is not allowed to create a new entry in " + schema);
+            }
+            else {
+                return;
+            }
+        }
+    }
+    
 
-    /* (non-Javadoc)
-    * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#getClientDN()
-    */
     public static String getClientName() throws InternalException {
         m_log.debug("Entered getClientName.");
 

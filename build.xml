@@ -146,6 +146,8 @@
             <filter token="DEFAULT_USER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_USER_PERMISSIONS}"/>
             <filter token="DEFAULT_GROUP_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_GROUP_PERMISSIONS}"/>
             <filter token="DEFAULT_OTHER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_OTHER_PERMISSIONS}"/>
+            <filter token="CREATE_VOMS_ATTRIBUTE" value="${glite-data-hydra-service.CREATE_VOMS_ATTRIBUTE}"/>
+            <filter token="ADMIN_VOMS_ATTRIBUTE" value="${glite-data-hydra-service.ADMIN_VOMS_ATTRIBUTE}"/>
             <filter token="ATTRIBUTE_HELPER_CLASS" value="${glite-data-hydra-service.ATTRIBUTE_HELPER_CLASS}"/>
             <filter token="CATALOG_HELPER_CLASS" value="${glite-data-hydra-service.CATALOG_HELPER_CLASS}"/>
             <filter token="SCHEMA_HELPER_CLASS" value="${glite-data-hydra-service.SCHEMA_HELPER_CLASS}"/>

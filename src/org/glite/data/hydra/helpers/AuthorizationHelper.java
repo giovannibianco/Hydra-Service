@@ -59,4 +59,10 @@ public abstract class AuthorizationHelper extends MetadataHelper {
         throws AuthorizationException, NotExistsException, InternalException {
 
     }
+
+    public void checkSchemaPermission(String schema, Perm patternPerm)
+        throws AuthorizationException, NotExistsException, InternalException {
+
+    }
+    
 }

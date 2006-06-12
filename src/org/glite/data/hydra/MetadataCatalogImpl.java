@@ -177,8 +177,8 @@ public class MetadataCatalogImpl {
         throws InvalidArgumentException, InternalException, ExistsException, NotExistsException, AuthorizationException {
         m_log.debug("Entered createEntry.");
 
-        // Check if client is allowed to create a new entry
-        // TODO: implement        
+        Perm writePerm = GliteUtils.convertIntToPerm(8);
+           
         // Internal objects
         int[] schemaIds = new int[entries.length];
         String[] entryNames = new String[entries.length];
@@ -193,6 +193,9 @@ public class MetadataCatalogImpl {
 
             // Check schema name validity
             m_schema_helper.checkSchemaNameValidity(schemaName);
+
+            // Check if client is allowed to create a new entry
+            m_authz_helper.checkSchemaPermission(schemaName, writePerm);
 
             // Check if entry already exists in catalog
             String[] matchEntries = m_cat_helper.getEntries(entry);
@@ -234,16 +237,6 @@ public class MetadataCatalogImpl {
         Perm patternPerm = GliteUtils.convertIntToPerm(2);
         m_authz_helper.checkPermission(entries, patternPerm);
 
-        // Check if given entries exist in the database
-        // TODO: this is done during the check of permissions
-        /**for (int i = 0; i < entries.length; i++) {
-            String[] matchEntries = m_cat_helper.getEntries(entries[i]);
-
-            if (matchEntries.length == 0) {
-                m_log.error("Entry not found in the catalog: " + entries[i]);
-                throw new NotExistsException("Entry not found in the catalog: " + entries[i]);
-            }
-        }*/
         // Remove the entries
         m_cat_helper.removeEntries(entries);
     }

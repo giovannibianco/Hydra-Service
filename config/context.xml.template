@@ -118,6 +118,28 @@
             </description>
 	    </parameter>    
 
+        <parameter>
+        	<name>create_voms_attribute</name>
+        	<value>@CREATE_VOMS_ATTRIBUTE@</value>
+            <description>
+             Authorization for createEntry(): clients having this attribute 
+             can create a new entry inside this service.
+             If the field is empty, then ALL clients are authorized 
+             to create new entries.
+            </description>
+        </parameter>
+
+        <parameter>
+        	<name>admin_voms_attribute</name>
+        	<value>@ADMIN_VOMS_ATTRIBUTE@</value>
+            <description>
+             Authorization for administrator: clients having this attribute
+             can do administrative operations (such as list all entries and
+             remove any entry, but not to get an entry) in the service.
+             If the field is empty, then NOBODY can act as administrator.
+            </description>
+        </parameter>
+
     	<!-- [ADVANCED] Implementation classes configuration -->
     	<parameter>
 	        <name>attribute_helper_class</name>
