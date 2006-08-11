@@ -1,0 +1,24 @@
+1. How to load schema with MySQL:
+
+    mysql -u $DBUSER -p${DBPASSWORD} -D $DBNAME -h $(hostname -f) -e "source mysql-schema.sql;"
+
+    e.g.
+
+    mysql -u hydra -phydra -D hydra -h localhost -e "source mysql-schema.sql;"
+
+2. How to check schema with MySQL:
+
+    mysql -u $DBUSER -p${DBPASSWORD} -D $DBNAME -h $(hostname -f) -BN -e "source mysql-get-version.sql;"
+
+    e.g.
+
+    mysql -u hydra -phydra -D hydra -h localhost -BN -e "source mysql-get-version.sql;"
+
+3. How to drop schema with MySQL:
+
+    mysql -u $DBUSER -p${DBPASSWORD} -D $DBNAME -h $(hostname -f) -e "source mysql-drop.sql;"
+
+    e.g.
+
+    mysql -u hydra -phydra -D hydra -h localhost -e "source mysql-drop.sql;"
+

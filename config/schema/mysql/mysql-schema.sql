@@ -27,7 +27,7 @@ CREATE TABLE t_entry (
 	other_perm		TINYINT(3) UNSIGNED NOT NULL,	
 	schema_id		INT	NOT NULL REFERENCES t_schema(schema_id),	
 	creation_time	TIMESTAMP NOT NULL
-) TYPE=INNODB;
+);
 
 --
 -- Table holding schemas
@@ -39,7 +39,7 @@ DROP TABLE IF EXISTS t_schema;
 CREATE TABLE t_schema (
 	schema_id			INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	schema_name			VARCHAR(100) NOT NULL UNIQUE
-) TYPE=INNODB;
+);
 
 --
 -- Table holding principals
@@ -50,7 +50,7 @@ DROP TABLE IF EXISTS t_principal;
 CREATE TABLE t_principal (
 	principal_id	INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	principal_name	VARCHAR(250) UNIQUE NOT NULL
-) TYPE=INNODB;
+);
 
 --
 -- Table holding acls
@@ -65,8 +65,17 @@ CREATE TABLE t_acl (
 	principal_id	INT NOT NULL REFERENCES t_principal(principal_id),
 	perm			TINYINT(3) UNSIGNED NOT NULL,
 	PRIMARY KEY (entry_id, principal_id)
-) TYPE=INNODB;
+);
 
+--
+-- Schema version
+--
+CREATE TABLE t_meta_vers (
+  major INTEGER NOT NULL,
+  minor INTEGER NOT NULL,
+  patch INTEGER NOT NULL
+);
+INSERT INTO t_meta_vers (major,minor,patch) VALUES (1,1,0);
 
 --
 -- Default schema for Hydra keystore
@@ -78,9 +87,10 @@ CREATE TABLE eds (
   edskey        VARCHAR(200),
   edsiv         VARCHAR(200),
   edskeyinfo    VARCHAR(200)
-) TYPE=INNODB;
+);
 
 --
 -- Insert entry for eds schema
 --
 INSERT INTO t_schema (schema_name) VALUES ('eds');
+
