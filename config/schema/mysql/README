@@ -14,6 +14,10 @@
 
     mysql -u hydra -phydra -D hydra -h localhost -BN -e "source mysql-get-version.sql;"
 
+    If there is an error with checking the schema version, then it is '1.0.0',
+    which did not yet have the schema version defined. You shall upgrade this
+    schema to the current one (see below).
+
 3. How to drop schema with MySQL:
 
     mysql -u $DBUSER -p${DBPASSWORD} -D $DBNAME -h $(hostname -f) -e "source mysql-drop.sql;"
@@ -22,3 +26,12 @@
 
     mysql -u hydra -phydra -D hydra -h localhost -e "source mysql-drop.sql;"
 
+4. Upgrade DB schema:
+
+   Upgrading from 1.0.0 version of the service to 1.1.0 schema:
+
+    mysql -u $DBUSER -p${DBPASSWORD} -D $DBNAME -h $(hostname -f) -e "source mysql-upgrade-1.0.0-1.1.0.sql;"
+
+    e.g.
+
+    mysql -u hydra -phydra -D hydra -h localhost -e "source mysql-upgrade-1.0.0-1.1.0.sql;"
