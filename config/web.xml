@@ -7,6 +7,13 @@
 <web-app>
     <display-name>gLite Hydra Service</display-name>
 
+    <!-- loading alternative log4j configuration -->
+    <listener>
+    	<listener-class>
+		org.glite.data.hydra.helpers.HydraContextListener
+		</listener-class>
+    </listener>
+
     <!-- The Axis servlet that runs the web service submissions and query interface. This can be switcehd off
          without affecting the other parts of the system.
       -->

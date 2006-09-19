@@ -1,6 +1,6 @@
 <Context path="@PATH@" docBase="@DOCBASE@" debug="0" reloadable="1">
 
-    <Parameter name="log4j.configFile.path" value="log4j.properties"
+    <Parameter name="log4j.configFile.path" value="@LOG4JCONFIG@"
         override="false"/>
 
     <!-- Connection pool to the Hydra service database -->

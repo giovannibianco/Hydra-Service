@@ -131,6 +131,7 @@
             <filter token="DESCRIPTION" value="${build.package.description}"/>
             <filter token="PATH" value="/${module.package.name}"/>
             <filter token="DOCBASE" value="${module.dir}/autogen/webapp"/>
+            <filter token="LOG4JCONFIG" value="${module.dir}/config/log4j.properties"/>
 
             <!-- Database related filters --> 
             <filter token="DBRESOURCENAME" value="${glite-data-hydra-service.DBRESOURCENAME}"/>
@@ -192,6 +193,8 @@
             <replaceregexp match="name=\&quot;MetadataCatalog\&quot;" replace="name=\&quot;Hydra\&quot;" flags="g">
                 <fileset dir="${module.webapp.dir}/WEB-INF" includes="server-config.wsdd"/>
             </replaceregexp>
+            <!-- log4j.properties in etc, to allow modifications -->
+            <delete file="${module.webapp.dir}/WEB-INF/classes/log4j.properties"/>
         </target>
 
         <target name="tomcat.configure.local"/>
@@ -203,8 +206,8 @@
         <target name="localinstall" depends="localinit">
           <mkdir dir="${prefix}/etc/${module.package.name}"/>
           <copy todir="${prefix}/etc/${module.package.name}">
-            <!--  <fileset dir="config/sql"/> -->
             <fileset dir="config" includes="**/*.sql"/>
+            <fileset dir="config" includes="log4j.properties"/>
           </copy>
 
 		<copy toDir="${prefix}/share/doc/${module.package.name}">
