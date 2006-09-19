@@ -35,4 +35,6 @@ public abstract class CatalogHelper extends MetadataHelper {
     public void removeEntries(String[] entries) 
         throws InternalException {
     }
+    
+    public String getSchemaVersion() throws InternalException { return null; }
 }

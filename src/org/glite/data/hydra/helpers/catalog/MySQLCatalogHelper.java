@@ -212,4 +212,43 @@ public class MySQLCatalogHelper extends CatalogHelper {
 
         //TODO: implement
     }
+    
+    /* (non-Javadoc)
+     * @see org.glite.data.catalog.service.meta.helpers.CatalogHelper#getSchemaVersion()
+     */
+    public String getSchemaVersion() throws InternalException {
+        m_log.debug("Entered getSchemaVersion.");
+
+        // Database Objects
+        Connection conn = null;
+        PreparedStatement p_stat = null;
+        ResultSet rs = null;
+
+        // Prepare the SQL string
+        String sql = "SELECT major, minor, patch FROM t_meta_vers";
+
+        try {
+            // Execute the query            
+            conn = m_dbmanager.getConnection(true);
+            p_stat = m_dbmanager.prepareStatement(conn, sql);
+
+            rs = p_stat.executeQuery();
+
+            // Parse the results
+            while (rs.next()) {
+                return rs.getInt("major") + "." + rs.getInt("minor") + "." + rs.getInt("patch");
+            }
+        } catch (Exception sqle) {
+            m_log.error("Error returning schema version. Exception was: " + sqle);
+            throw new InternalException("Error accessing entries in the database.");
+        } finally {
+            m_dbmanager.cleanupResources(p_stat);
+            m_dbmanager.cleanupResources(conn);
+            m_dbmanager.cleanupResources(rs);
+        }
+        
+        // if no row was returned from the DB
+        return null;
+    }
+
 }

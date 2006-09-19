@@ -437,4 +437,8 @@ public class MetadataCatalogImpl {
         // Create a new helper object instance and return
         return constructor.newInstance(params);
     }
+    
+    public String getSchemaVersion() throws InternalException {
+        return m_cat_helper.getSchemaVersion();
+    }
 }

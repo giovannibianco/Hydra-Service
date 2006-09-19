@@ -36,6 +36,17 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
     public MetadataCatalogSoapBindingImpl() throws InternalException {
         try {
             m_catalog = new MetadataCatalogImpl();
+            
+            String implSchemaVersion = getSchemaVersion();
+            String dbSchemaVersion = m_catalog.getSchemaVersion();
+            if(implSchemaVersion == null 
+                    || dbSchemaVersion == null 
+                    || ! dbSchemaVersion.equals(implSchemaVersion)) {
+                m_log.error("DB schema version (" + dbSchemaVersion
+                        + ") does not match the implementation (" + implSchemaVersion
+                        + ")");
+                throw new InternalException("DB schema do no match the implementation.");
+            }
         } catch (Exception e) {
             m_log.error("Error while starting up the catalog: ", e);
             throw new InternalException("Error while starting up the catalog.");
