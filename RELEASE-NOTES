@@ -1,3 +1,10 @@
+*** Release glite-data-hydra-service_R_1_1_1 2006-12-14
+    
+    o DB upgrade script, and explicit check for the 
+      proper schema version when the service starts up.
+    o Fixed bugs:
+	    #18826: log4j.properties are in etc, to enable modifications
+
 *** Release glite-data-hydra-service_R_1_1_0 2006-06-12
 
     o Proper authorization on all methods. This required a new 
