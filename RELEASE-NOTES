@@ -5,6 +5,11 @@
     o Fixed bugs:
 	    #18826: log4j.properties are in etc, to enable modifications
 
+*** Release glite-data-hydra-service_R_1_1_0_2 2007-05-02
+
+    o ETICSification: saving ETICS properties into a file for later use,
+      instead of passing them as parameters to the build.
+
 *** Release glite-data-hydra-service_R_1_1_0 2006-06-12
 
     o Proper authorization on all methods. This required a new 

@@ -14,6 +14,10 @@
 
 <project name="hydra-service" default="webapp">
 
+    <!-- optional properties to avoid passing them as command line parameters -->
+    <property file="${basedir}/etics.properties"/>
+    <!-- if this file is not there, nothing is printed! -->
+
 	<!-- ==============================================
 	      Builds the GLite data hydra-service component
 	     ============================================== -->
