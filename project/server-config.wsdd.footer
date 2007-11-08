@@ -1,0 +1,12 @@
+ <transport name="http">
+  <requestFlow>
+   <handler type="URLMapper"/>
+  </requestFlow>
+ </transport>
+ <transport name="local">
+  <responseFlow>
+   <handler type="java:org.apache.axis.transport.local.LocalResponder"/>
+  </responseFlow>
+ </transport>
+</deployment>
+

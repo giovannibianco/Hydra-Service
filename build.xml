@@ -1,229 +1,353 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-    Copyright (c) Members of the EGEE Collaboration. 2004.
+    Copyright (c) Members of the EGEE Collaboration. 2004-2007.
     See http://public.eu-egee.org/partners/ for details on 
     the copyright holders.
     For license conditions see the license file or
-    http://eu-egee.org/license.html
+    http://www.apache.org/licenses/LICENSE-2.0
 
-    Authors: 
-         Ricardo Rocha <Ricardo.Rocha@cern.ch>
+    Build file for the gLite Hydra Keystore.
 
-	Build file for the GLite data hydra-service component
+    Authors: FROHNER Ákos <Akos.Frohner@cern.ch>
 -->
-
 <project name="hydra-service" default="webapp">
+    
+    <!-- locations -->
+    <property environment="env"/>
+    <!-- optional property file for non-default locations -->
+    <property file="location.properties"/>
+    <condition property="glite.location" value="/opt/glite">
+        <not>
+            <isset property="env.GLITE_LOCATION"/>
+        </not>
+    </condition>
+    <condition property="glite.location" value="${env.GLITE_LOCATION}">
+        <isset property="env.GLITE_LOCATION"/>
+    </condition>
+    <condition property="util-java.location" value="${glite.location}">
+        <not>
+            <isset property="util-java.location"/>
+        </not>
+    </condition>
+    <condition property="trustmanager.location" value="${glite.location}">
+        <not>
+            <isset property="trustmanager.location"/>
+        </not>
+    </condition>
+    <property name="builddir" value="${basedir}/build"/>
 
-    <!-- optional properties to avoid passing them as command line parameters -->
-    <property file="${basedir}/etics.properties"/>
-    <!-- if this file is not there, nothing is printed! -->
+    <taskdef resource="axis-tasks.properties">
+        <classpath>
+            <fileset dir="${axis.location}/lib">
+                <include name="*.jar"/>
+            </fileset>
+        </classpath>
+    </taskdef>
 
-	<!-- ==============================================
-	      Builds the GLite data hydra-service component
-	     ============================================== -->
-	
-	<!-- =========================================
-	      Import properties (order is important)
-	     ========================================= -->
-	
-	<!-- Import baseline properties & user properties -->
-	<import file="../org.glite/project/baseline.properties.xml" />
 
-	<!-- import component build properties,
-		        component properties &
-		        component common properties -->
-	<import file="./project/properties.xml"/>
-	
-	<!-- import subsystem build properties,
-		        subsystem properties &
-		        subsystem common properties -->
-	<import file="${subsystem.properties.file}"/>
+    <!-- version numbers -->
+    <property file="${basedir}/VERSION"/>
+    <property name="NAME" value="glite-data-hydra-service"/>
 
-	<!-- import global build properties &
-		        global properties -->
-	<import file="${global.properties.file}" />
-		
-	<!-- =========================================
- 	      Load dependency property files (order is important)
-	     ========================================= -->
-    <property file="config/config.properties"/>
-	<property file="${user.dependencies.file}"/>
-	<property file="${component.dependencies.file}" />
-	<property file="${subsystem.dependencies.file}" />
-	<property file="${global.dependencies.file}"/>
-	
+    <path id="compile.classpath">
+        <fileset dir="${log4j.location}">
+            <include name="**/log4j*.jar"/>
+        </fileset>
+        <fileset dir="${axis.location}/lib">
+            <include name="axis.jar"/>
+            <include name="jaxrpc.jar"/>
+        </fileset>
+        <fileset dir="${jug.location}">
+            <include name="**/jug.jar"/>
+        </fileset>
+        <fileset dir="${tomcat.location}/common/lib">
+            <include name="servlet-api.jar"/>
+        </fileset>
 
-	<!-- =========================================
-                 Load configuration definitions (order is important)
-             ========================================= -->
-        <import file="${global.configure.options.file}"/>
-        <import file="${component.configure.options.file}"/>
-	
-	<!-- =========================================
-      	      Import task definitions (order is important)
-	     ========================================= -->
-	<import file="${subsystem.taskdefs.file}" />
-	<import file="${global.taskdefs.file}" />
-	
-	<!-- =========================================
-		 Load common targets
-	     ========================================= -->
-	<!-- Put your language target (java/c++-ant/c++-autotool/perl) here -->
-	<import file="${global.targets-java.file}" />
-    <import file="${subsystem.targets-wsdl.file}"/>
-    <import file="${subsystem.targets-webapp.file}"/>
-		
-	<!-- =========================================
-		 Load version file 
-	     ========================================= -->
-	<property file="${module.version.file}"/>
-		<property file="${module.build.file}"/>
-	
-	<!-- ==============================================
-		 Local private targets
-	     ============================================== -->
-	
-        <path id="compile.classpath">
+        <fileset dir="${util-java.location}/share/java">
+            <include name="glite-security-util-java.jar"/>
+        </fileset>
 
-	  <!-- stage classpath -->
-        <!--  <path refid="stage.classpath"/>-->
+        <pathelement location="${builddir}/classes"/>
+        <pathelement location="${builddir}/soap/classes"/>
+    </path>
 
-          <!-- module classpath -->
-          <path refid="module.classpath"/>
+    <filterset id="module.filters">
+        <filter token="VERSION" value="${VERSION}"/>
+        <filter token="INTERFACE_VERSION" value="${INTERFACE_VERSION}"/>
+    </filterset>
 
-          <!-- external dependencies -->
-          <path refid="ext.axis.classpath"/>
-          <path refid="ext.tomcat.classpath"/>
-	  <path refid="ext.log4j.classpath"/>
-	  <path refid="ext.mm-mysql.classpath"/>
-          <pathelement location="${stage.java.dir}/glite-data-common.jar"/>
-          <pathelement location="${stage.java.dir}/glite-security-util-java.jar"/>
-          <pathelement location="${module.classes.dir}"/>
-          <pathelement location="${module.soap.classes}"/>
+    <target name="init">
+        <mkdir dir="${builddir}"/>
+        <mkdir dir="${builddir}/classes"/>
+        <mkdir dir="${builddir}/soap/src"/>
+        <mkdir dir="${builddir}/soap/classes"/>
 
-        </path>
+        <echo message="VERSION               =${VERSION}"/>
+        <echo message="INTERFACE_VERSION     =${INTERFACE_VERSION}"/>
 
-        <path id="test.classpath">
-          
-	  <!-- include compile classpath -->
-          <path refid="compile.classpath"/>
-	
-	  <!-- pickup version.properties -->
-	  <pathelement location="project"/> 
-	  
-	  <!-- include module test classes directory -->
-	  <pathelement location="${module.test.classes.dir}"/>
+        <echo message="glite.location        =${glite.location}"/>
+        <echo message="axis.location         =${axis.location}"/>
+        <echo message="tomcat.location       =${tomcat.location}"/>
+        <echo message="mm-mysql.location     =${mm-mysql.location}"/>
+        <echo message="log4j.location        =${log4j.location}"/>
+        <echo message="util-java.location    =${util-java.location}"/>
+        <echo message="trustmanager.location =${trustmanager.location}"/>
+    </target>
 
-	  <!-- include unittest configuration directory -->
-	  <pathelement location="config/unittest"/>
-	  
-	</path>
-						
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
 
-	<target name="localinit"
-		description="Module specific initialization tasks">
-          <mkdir dir="autogen"/>
-          <mkdir dir="${module.classes.dir}"/>
-          <mkdir dir="${module.test.classes.dir}"/>
-          <mkdir dir="${module.soap.src}"/>
-          <mkdir dir="${module.soap.classes}"/>
+    <target name="webapp.soap.generate.check" depends="init">
+        <condition property="webapp.soap.generate.skip">
+            <uptodate 
+                srcfile="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
+                targetfile="${builddir}/soap/src/org/glite/data/hydra/MetadataCatalog.java"/>
+        </condition>
+    </target>
+    <target name="webapp.soap.generate" 
+        depends="init,webapp.soap.generate.check"
+        unless="webapp.soap.generate.skip">
+        <axis-wsdl2java url="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
+            testcase="false" verbose="true" serverside="true"
+            skeletondeploy="true" deployscope="Application"
+            output="${builddir}/soap/src">
+            <mapping
+                namespace="http://glite.org/wsdl/services/org.glite.data.catalog"
+                package="org.glite.data.catalog.service"/>
+            <mapping
+                namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta"
+                package="org.glite.data.hydra"/>
+        </axis-wsdl2java>
+    </target>
 
-          <filterset id="module.filters">
-            <!-- Module properties filters -->
-            <filter token="MODULE.NAME" value="${module.package.name}"/>
-            <filter token="MODULE.VERSION" value="${module.version}"/>
-            <filter token="INTERFACE.VERSION" value="${interface.version}"/>
-            <filter token="SUMMARY" value="${build.package.summary}"/>
-            <filter token="DESCRIPTION" value="${build.package.description}"/>
-            <filter token="PATH" value="/${module.package.name}"/>
-            <filter token="DOCBASE" value="${module.dir}/autogen/webapp"/>
-            <filter token="LOG4JCONFIG" value="${module.dir}/config/log4j.properties"/>
+    <target name="webapp.wsdd" depends="init, webapp.soap.generate">
+        <xslt style="${basedir}/project/split-deploy-wsdd.xsl" 
+            in="${builddir}/soap/src/org/glite/data/hydra/deploy.wsdd"
+            out="${builddir}/soap/src/org/glite/data/hydra/deploy.wsdd.service"/>
+        <concat destfile="${builddir}/webapp/WEB-INF/server-config.wsdd">
+            <header filtering="false" file="${basedir}/project/server-config.wsdd.header"/>
+            <footer filtering="false" file="${basedir}/project/server-config.wsdd.footer"/>
+            <fileset dir="${builddir}/soap/src" includes="**/deploy.wsdd.service"/>
+            <filterchain>
+                <tokenfilter>
+                    <replaceregex pattern="&lt;\?xml.*\?&gt;" replace=""/>
+                    <replaceregex 
+                        pattern="name=\&quot;MetadataCatalog\&quot;" 
+                        replace="name=\&quot;Hydra\&quot;"/>
+                </tokenfilter>
+            </filterchain>
+        </concat>
+    </target>
 
-            <!-- Database related filters --> 
-            <filter token="DBRESOURCENAME" value="${glite-data-hydra-service.DBRESOURCENAME}"/>
-            <filter token="DBNAME" value="${glite-data-hydra-service.DBNAME}"/>
-            <filter token="DBUSER" value="${glite-data-hydra-service.DBUSER}"/>
-            <filter token="DBPASSWORD" value="${glite-data-hydra-service.DBPASSWORD}"/>
-            <filter token="DBDRIVERCLASS" value="${glite-data-hydra-service.DBDRIVERCLASS}"/>
-            <filter token="DBURL" value="${glite-data-hydra-service.DBURL}"/>
-	    
-	    <!-- Service Configuration related filters -->
-            <filter token="DEFAULT_DN" value="${glite-data-hydra-service.DEFAULT_DN}"/>
-            <filter token="DEFAULT_GROUP" value="${glite-data-hydra-service.DEFAULT_GROUP}"/>
-            <filter token="DEFAULT_USER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_USER_PERMISSIONS}"/>
-            <filter token="DEFAULT_GROUP_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_GROUP_PERMISSIONS}"/>
-            <filter token="DEFAULT_OTHER_PERMISSIONS" value="${glite-data-hydra-service.DEFAULT_OTHER_PERMISSIONS}"/>
-            <filter token="CREATE_VOMS_ATTRIBUTE" value="${glite-data-hydra-service.CREATE_VOMS_ATTRIBUTE}"/>
-            <filter token="ADMIN_VOMS_ATTRIBUTE" value="${glite-data-hydra-service.ADMIN_VOMS_ATTRIBUTE}"/>
-            <filter token="ATTRIBUTE_HELPER_CLASS" value="${glite-data-hydra-service.ATTRIBUTE_HELPER_CLASS}"/>
-            <filter token="CATALOG_HELPER_CLASS" value="${glite-data-hydra-service.CATALOG_HELPER_CLASS}"/>
-            <filter token="SCHEMA_HELPER_CLASS" value="${glite-data-hydra-service.SCHEMA_HELPER_CLASS}"/>
-            <filter token="AUTHORIZATION_HELPER_CLASS" value="${glite-data-hydra-service.AUTHORIZATION_HELPER_CLASS}"/>
-          </filterset>
-	</target>
-	
-	<target name="localcompile" depends="webapp.soap.compile"
-		description="Module specific compile tasks">
-	</target>
+    <target name="webapp.soap.fixsrc.check" depends="init">
+        <condition property="webapp.soap.fixsrc.skip">
+            <uptodate>
+                <srcfiles dir="${builddir}/soap/src" includes="**/*Exception.java"/>
+                <mapper type="glob" from="*.java" to="*.java.orig"/>
+            </uptodate>
+        </condition>
+    </target>
+    <target name="webapp.soap.fixsrc" 
+        depends="webapp.soap.generate,webapp.soap.fixsrc.check"
+        unless="webapp.soap.fixsrc.skip"
+        description="Fixes the generated exception code to make it work with gSOAP">
+        <!-- save the patched files -->
+        <copy toDir="${builddir}/soap/src">
+            <fileset dir="${builddir}/soap/src" includes="**/*Exception.java"/>
+            <mapper type="glob" from="*.java" to="*.java.orig"/>
+        </copy>
+        
+        <!-- do the patching back to the original filenames -->
+        <copy toDir="${builddir}/soap/src" overwrite="true">
+            <fileset dir="${builddir}/soap/src" includes="**/*Exception.java.orig"/>
+            <mapper type="glob" from="*.java.orig" to="*.java"/>
+            <filterchain>
+                <tokenfilter>
+                    <replacestring 
+                        from="context.serialize(qname, null, this);" 
+                        to="context.serialize(getTypeDesc().getXmlType(), null, this);"/>
+                </tokenfilter>
+            </filterchain>
+        </copy>
+    </target>
 
-	<target name="localclean" depends="tomcat.unconfigure"
-		description="Module specific cleaning tasks">
-          <delete dir="autogen"/>
-	</target>
+    <target name="webapp.soap.compile" 
+        depends="init, webapp.soap.generate, webapp.soap.fixsrc">
+        <mkdir dir="${builddir}/soap/classes"/>
+        <javac srcdir="${builddir}/soap/src" 
+               destdir="${builddir}/soap/classes"
+               debug="true"
+               deprecation="true">
+            <classpath refid="compile.classpath"/>
+            <exclude name="**/*Impl.java"/>
+        </javac>
 
-        <!-- webapp.soap.compile depends on this target -->
-        <target name="webapp.soap.generate" depends="localinit">
-	<if>
-            <not>
-                <uptodate 
-                    srcfile="${stage.int.dir}/org.glite.data-metadata-${interface.version}.wsdl"
-                    targetfile="${module.soap.src}/org/glite/data/hydra/MetadataCatalog.java"/>
-            </not>
-            <then>
-                <axis-wsdl2java url="${stage.int.dir}/org.glite.data-metadata-${interface.version}.wsdl"
-                    testcase="false" verbose="true" serverside="true"
-                    skeletondeploy="true" deployscope="Application"
-                    output="${module.soap.src}">
-                    <mapping
-                        namespace="http://glite.org/wsdl/services/org.glite.data.catalog"
-                        package="org.glite.data.catalog.service"/>
-                    <mapping
-                        namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta"
-                        package="org.glite.data.hydra"/>
-                </axis-wsdl2java>
-            </then>
-        </if>
-        </target>      
+        <!-- 
+           for GUI users that the generated source will not overlap
+           the class with the same name in the src directory
+          -->
+        <delete>
+            <fileset dir="${builddir}/soap/src" includes="**/*Impl.java"/>
+        </delete>
+    </target>
 
-        <target name="webapp.local">
-            <replaceregexp match="name=\&quot;MetadataCatalog\&quot;" replace="name=\&quot;Hydra\&quot;" flags="g">
-                <fileset dir="${module.webapp.dir}/WEB-INF" includes="server-config.wsdd"/>
-            </replaceregexp>
-            <!-- log4j.properties in etc, to allow modifications -->
-            <delete file="${module.webapp.dir}/WEB-INF/classes/log4j.properties"/>
-        </target>
+    <target name="compile" depends="init, webapp.soap.compile">
+        <mkdir dir="${builddir}/classes"/>
+        <javac srcdir="${basedir}/src" 
+               destdir="${builddir}/classes"
+               debug="true"
+               deprecation="true">
+            <classpath refid="compile.classpath"/>
+            <exclude name="**/*Impl.java"/>
+        </javac>
+    </target>
 
-        <target name="tomcat.configure.local"/>
+    <target name="webapp" depends="init, compile, webapp.wsdd">
+        <mkdir dir="${builddir}/webapp/WEB-INF/lib"/>
+        <mkdir dir="${builddir}/webapp/WEB-INF/classes"/>
 
-        <target name="checkstyle"/>
+        <!-- make it look good ... -->
+        <copy toDir="${builddir}/webapp">
+            <fileset dir="config/web" includes="*.html, *.css, *.jsp, *.js"/>
+            <filterset refid="module.filters"/>
+        </copy>
+        <copy toDir="${builddir}/webapp">
+            <fileset dir="config/web" includes="*.jpg, *.png"/>
+        </copy>
 
-        <target name="stage" depends="webapp.stage"/>
+        <!-- servlet and axis service configuration -->
+        <copy toDir="${builddir}/webapp/WEB-INF">
+            <fileset dir="config" includes="web.xml"/>
+        </copy>
 
-        <target name="localinstall" depends="localinit">
-          <mkdir dir="${prefix}/etc/${module.package.name}"/>
-          <copy todir="${prefix}/etc/${module.package.name}">
-            <fileset dir="config" includes="**/*.sql"/>
-            <fileset dir="config" includes="log4j.properties"/>
-          </copy>
+        <!-- dependencies -->
+        <copy toDir="${builddir}/webapp/WEB-INF/lib" flatten="true">
+            <fileset dir="${axis.location}/lib">
+                <include name="*.jar"/>
+            </fileset>
+            <fileset dir="${util-java.location}/share/java">
+                <include name="glite-security-util-java.jar"/>
+            </fileset>
+            <fileset dir="${bcprov.location}/jars">
+                <include name="bcprov-jdk14-122.jar"/>
+            </fileset>
+            <fileset dir="${jug.location}">
+                <include name="**/jug.jar"/>
+            </fileset>
+        </copy>
 
-		<copy toDir="${prefix}/share/doc/${module.package.name}">
-			<fileset dir="${subsystem.dir}/doc">
-				<include name="INSTALL.tomcat5" />
-				<include name="INSTALL.mysql" />
+        <!-- implemenetation -->
+        <copy toDir="${builddir}/webapp/WEB-INF/classes">
+            <fileset dir="${builddir}/soap/classes">
+                <exclude name="**/*Impl*"/>
+                <exclude name="**/*Stub*"/>
+                <exclude name="**/*Service.class"/>
+                <exclude name="**/*ServiceLocator.class"/>
+            </fileset>
+            <fileset dir="${builddir}/classes"/>
+        </copy>
+
+        <!-- version information -->
+        <copy 
+            file="${basedir}/VERSION"
+            tofile="${builddir}/webapp/WEB-INF/classes/version.properties" 
+            overwrite="true"/>
+        <echo file="${builddir}/webapp/WEB-INF/classes/version.properties" append="true"
+            message="module.release=${RELEASE}${line.separator}"/>
+        <echo file="${builddir}/webapp/WEB-INF/classes/version.properties" append="true"
+            message="feature.string=glite-data-hydra-service-${VERSION}-${RELEASE}${line.separator}"/>
+    </target>
+
+    <target name="webapp.war" depends="init, webapp">
+        <mkdir dir="${builddir}/share/java"/>
+        <war destfile="${builddir}/share/java/${NAME}.war"
+            webxml="${builddir}/webapp/WEB-INF/web.xml" update="true">
+            <fileset dir="${builddir}/webapp" excludes="**/WEB-INF/**"/>
+            <lib dir="${builddir}/webapp/WEB-INF/lib"/>
+            <classes dir="${builddir}/webapp/WEB-INF/classes"/>
+            <webinf dir="${builddir}/webapp/WEB-INF" includes="server-config.wsdd"/>
+        </war>
+    </target>
+
+    <target name="webapp.doc.check" depends="init">
+        <condition property="webapp.doc.skip">
+            <uptodate targetfile="${builddir}/doc/index.html">
+                <srcfiles dir="src" includes="**/*.java, **/*.html"/>
+            </uptodate>
+        </condition>
+    </target>
+    <target name="webapp.doc" depends="init" unless="webapp.doc.skip">
+        <mkdir dir="${builddir}/doc"/>
+        <javadoc
+            sourcepath="src"
+            packagenames="org.glite.data.*"
+            excludepackagenames="org.glite.data.*.log"
+            destdir="${builddir}/doc"
+            windowtitle="glite-data-hydra"
+            breakiterator="yes">
+            <tag name="stereotype" scope="all" description="Stereotype:"/>
+            <bottom><![CDATA[<i>Copyright &#169; 2004-2007. <A href="http://public.eu-egee.org/">EU-EGEE</A></i>]]></bottom>
+            <doctitle><![CDATA[<h1>gLite Data Management Services</h1>]]></doctitle>
+        </javadoc>
+    </target>
+
+
+    <target name="install" depends="init,webapp.war">
+        
+        <property name="prefix" value="${install.dir}"/>
+        
+        <mkdir dir="${prefix}"/>
+
+		<mkdir dir="${prefix}/share/java" />
+
+		<copy toDir="${prefix}/share/java">
+			<fileset dir="${builddir}/share/java">
+				<include name="*.war" />
 			</fileset>
 		</copy>
-        </target>
- 
-        <target name="distbin" depends="init, webapp.distbin"/>
 	
-</project>		
+		<mkdir dir="${prefix}/share/doc/glite-data-hydra-service" />
+	
+        <!--
+		<copy toDir="${prefix}/share/doc/glite-data-hydra-service/html">
+			<fileset dir="${builddir}/doc">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+        -->
+        
+		<copy toDir="${prefix}/share/doc/${NAME}">
+			<fileset dir="${basedir}">
+				<include name="LICENSE" />
+				<include name="RELEASE-NOTES" />
+				<include name="VERSION" />
+			</fileset>
+		</copy>
+        <mkdir dir="${prefix}/etc/${NAME}"/>
+		<copy todir="${prefix}/etc/${NAME}">
+			<fileset dir="config">
+				<include name="*.template" />
+			</fileset>
+		</copy>
+		<copy file="config/config.properties"
+              tofile="${prefix}/etc/${NAME}/config.properties.example"/>
+        <mkdir dir="${prefix}/sbin"/>
+		<copy file="config/configure.sh"
+              tofile="${prefix}/sbin/${NAME}-configure.sh"/>
+        <chmod file="${prefix}/sbin/${NAME}-configure.sh" perm="ugo+rx"/>
+    </target>
+
+    <target name="tar">
+        <antcall target="install">
+			<param name="prefix" value="${builddir}/tar"/>
+		</antcall>
+        <mkdir dir="${basedir}/tgz"/>
+        <exec executable="tar" dir="${builddir}/tar">
+            <arg line="-czf ${basedir}/tgz/${NAME}-${VERSION}.tar.gz ." />
+        </exec>
+    </target>
+
+</project>
+
