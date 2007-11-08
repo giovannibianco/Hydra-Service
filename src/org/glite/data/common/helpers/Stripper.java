@@ -1,12 +1,12 @@
 /*
  * Copyright (c) Members of the EGEE Collaboration. 2004.
  * See http://eu-egee.org/partners/ for details on the copyright holders.
- * For license conditions see the license file or http://eu-egee.org/license.html
+ * For license conditions see the license file or http://www.apache.org/licenses/LICENSE-2.0
  */
 
 /*
  * Authors: Gavin McCance <gavin.mccance@cern.ch>
- * Version: $Id: Stripper.java,v 1.1 2007-11-08 01:20:23 szamsu Exp $
+ * Version: $Id: Stripper.java,v 1.2 2007-11-08 10:41:29 szamsu Exp $
  */
  
  
