@@ -36,6 +36,21 @@
     </condition>
     <property name="builddir" value="${basedir}/build"/>
 
+    <!-- dumping the most important locations for later use -->
+    <target  name="configure">
+        <echo file="location.properties">
+glite.location        =${glite.location}
+axis.location         =${axis.location}
+tomcat.location       =${tomcat.location}
+mm-mysql.location     =${mm-mysql.location}
+log4j.location        =${log4j.location}
+jug.location          =${jug.location}
+bcprov.location       =${bcprov.location}
+util-java.location    =${util-java.location}
+trustmanager.location =${trustmanager.location}
+        </echo>
+    </target>
+
     <taskdef resource="axis-tasks.properties">
         <classpath>
             <fileset dir="${axis.location}/lib">
@@ -91,6 +106,8 @@
         <echo message="tomcat.location       =${tomcat.location}"/>
         <echo message="mm-mysql.location     =${mm-mysql.location}"/>
         <echo message="log4j.location        =${log4j.location}"/>
+        <echo message="jug.location          =${jug.location}"/>
+        <echo message="bcprov.location       =${bcprov.location}"/>
         <echo message="util-java.location    =${util-java.location}"/>
         <echo message="trustmanager.location =${trustmanager.location}"/>
     </target>
@@ -295,8 +312,6 @@
 
 
     <target name="install" depends="init,webapp.war">
-        
-        <property name="prefix" value="${install.dir}"/>
         
         <mkdir dir="${prefix}"/>
 
