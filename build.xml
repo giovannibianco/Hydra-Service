@@ -16,6 +16,7 @@
     <property environment="env"/>
     <!-- optional property file for non-default locations -->
     <property file="location.properties"/>
+    <!-- using defaults, if no specific location is set -->
     <condition property="glite.location" value="/opt/glite">
         <not>
             <isset property="env.GLITE_LOCATION"/>
@@ -38,6 +39,18 @@
 
     <!-- dumping the most important locations for later use -->
     <target  name="configure">
+        <echo message="VERSION               =${VERSION}"/>
+        <echo message="INTERFACE_VERSION     =${INTERFACE_VERSION}"/>
+
+        <echo message="glite.location        =${glite.location}"/>
+        <echo message="axis.location         =${axis.location}"/>
+        <echo message="tomcat.location       =${tomcat.location}"/>
+        <echo message="mm-mysql.location     =${mm-mysql.location}"/>
+        <echo message="log4j.location        =${log4j.location}"/>
+        <echo message="jug.location          =${jug.location}"/>
+        <echo message="bcprov.location       =${bcprov.location}"/>
+        <echo message="util-java.location    =${util-java.location}"/>
+        <echo message="trustmanager.location =${trustmanager.location}"/>
         <echo file="location.properties">
 glite.location        =${glite.location}
 axis.location         =${axis.location}
@@ -51,6 +64,7 @@ trustmanager.location =${trustmanager.location}
         </echo>
     </target>
 
+    <!-- for Java code generation from a WSDL -->
     <taskdef resource="axis-tasks.properties">
         <classpath>
             <fileset dir="${axis.location}/lib">
@@ -97,19 +111,6 @@ trustmanager.location =${trustmanager.location}
         <mkdir dir="${builddir}/classes"/>
         <mkdir dir="${builddir}/soap/src"/>
         <mkdir dir="${builddir}/soap/classes"/>
-
-        <echo message="VERSION               =${VERSION}"/>
-        <echo message="INTERFACE_VERSION     =${INTERFACE_VERSION}"/>
-
-        <echo message="glite.location        =${glite.location}"/>
-        <echo message="axis.location         =${axis.location}"/>
-        <echo message="tomcat.location       =${tomcat.location}"/>
-        <echo message="mm-mysql.location     =${mm-mysql.location}"/>
-        <echo message="log4j.location        =${log4j.location}"/>
-        <echo message="jug.location          =${jug.location}"/>
-        <echo message="bcprov.location       =${bcprov.location}"/>
-        <echo message="util-java.location    =${util-java.location}"/>
-        <echo message="trustmanager.location =${trustmanager.location}"/>
     </target>
 
     <target name="clean">
@@ -117,11 +118,9 @@ trustmanager.location =${trustmanager.location}
     </target>
 
     <target name="webapp.soap.generate.check" depends="init">
-        <condition property="webapp.soap.generate.skip">
-            <uptodate 
-                srcfile="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
-                targetfile="${builddir}/soap/src/org/glite/data/hydra/MetadataCatalog.java"/>
-        </condition>
+        <uptodate property="webapp.soap.generate.skip"
+            srcfile="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
+            targetfile="${builddir}/soap/src/org/glite/data/hydra/MetadataCatalog.java"/>
     </target>
     <target name="webapp.soap.generate" 
         depends="init,webapp.soap.generate.check"
@@ -159,12 +158,10 @@ trustmanager.location =${trustmanager.location}
     </target>
 
     <target name="webapp.soap.fixsrc.check" depends="init">
-        <condition property="webapp.soap.fixsrc.skip">
-            <uptodate>
-                <srcfiles dir="${builddir}/soap/src" includes="**/*Exception.java"/>
-                <mapper type="glob" from="*.java" to="*.java.orig"/>
-            </uptodate>
-        </condition>
+        <uptodate property="webapp.soap.fixsrc.skip">
+            <srcfiles dir="${builddir}/soap/src" includes="**/*Exception.java"/>
+            <mapper type="glob" from="*.java" to="*.java.orig"/>
+        </uptodate>
     </target>
     <target name="webapp.soap.fixsrc" 
         depends="webapp.soap.generate,webapp.soap.fixsrc.check"
@@ -289,11 +286,10 @@ trustmanager.location =${trustmanager.location}
     </target>
 
     <target name="webapp.doc.check" depends="init">
-        <condition property="webapp.doc.skip">
-            <uptodate targetfile="${builddir}/doc/index.html">
-                <srcfiles dir="src" includes="**/*.java, **/*.html"/>
-            </uptodate>
-        </condition>
+        <uptodate  property="webapp.doc.skip"
+            targetfile="${builddir}/doc/index.html">
+            <srcfiles dir="src" includes="**/*.java, **/*.html"/>
+        </uptodate>
     </target>
     <target name="webapp.doc" depends="init" unless="webapp.doc.skip">
         <mkdir dir="${builddir}/doc"/>
@@ -364,5 +360,111 @@ trustmanager.location =${trustmanager.location}
         </exec>
     </target>
 
-</project>
 
+
+    <!-- ================================================================= -->
+    <!-- Testing Targets                                                   -->
+    <!-- These are normall not used in the builds and require extra        -->
+    <!-- dependencies, like org.glite.data.test-utils and voms-clients     -->
+    <!-- ================================================================= -->
+
+    <available property="certs.available" file="${builddir}/certs"/>
+    <target name="certs.generate" depends="init" unless="certs.available">
+        <mkdir dir="${builddir}/certs"/>
+        <exec dir="${builddir}/certs"
+            executable="${glite.location}/share/test/utils/glite-test-certs">
+            <arg value="--verbose"/>
+            <arg value="--some"/>
+        </exec>
+    </target>
+    <target name="certs.remove" if="certs.available">
+        <delete dir="${builddir}/certs"/>
+    </target>
+
+    <property name="tomcat.testdir" value="${builddir}/tomcat"/>
+    <available property="tomcat.configured" file="${tomcat.testdir}/server"/>
+    <target name="tomcat.configure" 
+        depends="init,certs.generate" 
+        unless="tomcat.configured">
+        <!-- filter for tomcat secure server configuration -->
+        <filterset id="security.filters">
+            <filter token="CAFILES" value="${builddir}/certs/grid-security/certificates/*.0"/>
+            <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
+            <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
+            <filter token="SSLKEY" value="${builddir}/certs/grid-security/hostkey.pem"/>
+            <filter token="LOG4JCONF" value="${glite.location}/etc/glite-security-trustmanager/log4j-trustmanager.properties"/> 
+        </filterset>
+
+        <mkdir dir="${tomcat.testdir}/logs"/>
+        <mkdir dir="${tomcat.testdir}/temp"/>
+        <mkdir dir="${tomcat.testdir}/work"/>
+
+        <copy toDir="${tomcat.testdir}/bin">
+            <fileset dir="${tomcat.location}/bin"/>
+        </copy>
+        <chmod dir="${tomcat.testdir}/bin" includes="*.sh" perm="ugo+rx"/>
+
+        <copy toDir="${tomcat.testdir}/shared">
+            <fileset dir="${tomcat.location}/shared"/>
+        </copy>
+        <copy toDir="${tomcat.testdir}/common">
+            <fileset dir="${tomcat.location}/common"/>
+        </copy>
+        <copy toDir="${tomcat.testdir}/server">
+            <fileset dir="${tomcat.location}/server">
+                <exclude name="webapps/**"/>
+            </fileset>
+        </copy>
+
+        <mkdir dir="${tomcat.testdir}/conf"/>
+        <copy toDir="${tomcat.testdir}/server/lib" flatten="true">
+            <fileset dir="${util-java.location}/share/java">
+                <include name="glite-security-util-java.jar"/>
+                <include name="glite-security-trustmanager.jar"/>
+            </fileset>
+            <fileset dir="${bcprov.location}/jars">
+                <include name="bcprov-jdk14-122.jar"/>
+            </fileset>
+            <fileset dir="${log4j.location}">
+                <include name="**/log4j*.jar"/>
+            </fileset>
+        </copy>
+        <copy file="${glite.location}/share/glite-security-trustmanager/server.xml.template" 
+            toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
+            <filterset refid="security.filters"/>
+        </copy>
+        <copy toDir="${tomcat.testdir}/common/lib" flatten="true">
+            <fileset dir="${mm-mysql.location}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+        <copy file="${tomcat.location}/conf/web.xml"
+            tofile="${tomcat.testdir}/conf/web.xml"/>
+        <mkdir dir="${tomcat.testdir}/conf/Catalina/localhost"/>
+
+        <copy toDir="${tomcat.testdir}/webapps">
+            <fileset dir="${tomcat.location}/webapps" includes="ROOT/**"/>
+        </copy>
+    </target>
+    <target name="tomcat.unconfigure" depends="certs.remove">
+        <delete dir="${tomcat.testdir}"/>
+    </target>
+
+    <target name="tomcat.restart" depends="tomcat.configure,tomcat.stop,tomcat.start"
+        description="restarting the application container"/>
+    <target name="tomcat.stop" depends="tomcat.configure"
+        description="stopping the application container">
+         <echo message="Stopping tomcat server"/>
+         <exec dir="${tomcat.testdir}/bin/" executable="catalina.sh" resolveexecutable="true">
+            <arg line="stop"/>
+         </exec>
+    </target>
+    <target name="tomcat.start" depends="tomcat.configure"
+        description="starting the application container">
+         <echo message="Starting tomcat server"/>
+         <exec dir="${tomcat.testdir}/bin/" executable="catalina.sh" resolveexecutable="true">
+            <arg line="start"/>
+         </exec>
+    </target>
+    
+</project>
