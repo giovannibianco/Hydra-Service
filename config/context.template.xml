@@ -1,0 +1,94 @@
+<Context docBase="@DOCBASE@" debug="0" reloadable="1">
+
+    <Parameter name="log4j.configFile.path" value="@LOG4JCONFIG@"
+        override="false"/>
+
+
+    <!-- Connection pool to the Hydra service database -->
+    <Resource name="jdbc/hydra" auth="Container" 
+        type="javax.sql.DataSource"
+        factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory"
+        maxActive="50"
+        maxIdle="30"
+        maxWait="10000"
+        removeAbandoned="true"
+        removeAbandonedTimeout="120"
+        logAbandoned="true"
+        username="@DBUSER@"
+        password="@DBPASSWORD@"
+        driverClassName="com.mysql.jdbc.Driver"
+        url="jdbc:mysql://@HOSTNAME@:3306/@DBNAME@"
+     />
+
+<!--
+Default permissions configuration
+=================================
+	
+create_voms_attribute
+  Authorization for createEntry(): clients having this attribute 
+  can create a new entry inside this service.
+  If the field is empty, then ALL clients are authorized 
+  to create new entries.
+
+admin_voms_attribute
+  Authorization for administrator: clients having this attribute
+  can do administrative operations (such as list all entries and
+  remove any entry, but not to get an entry) in the service.
+  If the field is empty, then NOBODY can act as administrator.
+
+vomsdir
+  Location of the trusted VOMS server certificates,
+  by default '/etc/grid-security/vomsdir/*.pem'.
+
+
+default_dn
+  Default user DN (distinguished name) to use if security is off
+
+default_group
+  Default group DN (distinguished name) to use if one could not be retrieved
+
+default_user_permissions
+  Default user permissions assigned to new entries.
+  Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
+  Example: 239 (1+2+4+8+32+64+128) == all permissions, except exec
+
+default_group_permissions
+  Default group permissions assigned to new entries.
+  Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
+  Example: 64 == get metadata only
+
+default_other_permissions
+  Default user permissions assigned to new entries.
+  Pattern: P(1); RM(2); R(4); W(8); X(16); L(32); GM(64); SM(128);
+  Example: 64 == get metadata only
+
+
+[ADVANCED] Implementation classes configuration
+===============================================
+
+attribute_helper_class
+catalog_helper_class
+schema_helper_class
+authorization_helper_class
+-->
+    <Resource name="bean/config" auth="Container" 
+        type="org.glite.data.common.helpers.ConfigurationBean"
+        factory="org.glite.data.common.helpers.ImplicitContextConfigurationBeanFactory"
+
+        create_voms_attribute="@CREATE_VOMS_ATTRIBUTE@"
+        admin_voms_attribute="@ADMIN_VOMS_ATTRIBUTE@"
+        vomsdir="@VOMSDIR@"
+
+        default_dn="default-dn"
+        default_group="default-group"
+        default_user_permissions="239"
+        default_group_permissions="0"
+        default_other_permissions="0"
+        
+        attribute_helper_class="org.glite.data.hydra.helpers.attribute.MySQLAttributeHelper"
+        catalog_helper_class="org.glite.data.hydra.helpers.catalog.MySQLCatalogHelper"
+        schema_helper_class="org.glite.data.hydra.helpers.schema.MySQLSchemaHelper"
+        authorization_helper_class="org.glite.data.hydra.helpers.authz.MySQLAuthorizationHelper"
+    />
+
+</Context>
