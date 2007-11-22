@@ -475,10 +475,13 @@ trustmanager.location =${trustmanager.location}
             <filter token="VOMSDIR" value="${builddir}/certs/grid-security/vomsdir/*"/>
         </filterset>
         <copy file="${basedir}/config/context.template.xml" overwrite="true"
-            toFile="${tomcat.testdir}/Catalina/localhost/1#glite-data-hydra-service.xml">
+            toFile="${tomcat.testdir}/conf/Catalina/localhost/1#glite-data-hydra-service.xml">
             <filterset refid="context.filters.1"/>
         </copy>
 
+    </target>
+    <target name="test.unconfigure">
+        <delete file="${tomcat.testdir}/conf/Catalina/localhost/1#glite-data-hydra-service.xml"/>
     </target>
 
 </project>
