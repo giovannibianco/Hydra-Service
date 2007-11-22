@@ -375,6 +375,7 @@ trustmanager.location =${trustmanager.location}
             executable="${glite.location}/share/test/utils/glite-test-certs">
             <arg value="--verbose"/>
             <arg value="--some"/>
+            <arg value="--system"/>
         </exec>
     </target>
     <target name="certs.remove" if="certs.available">
@@ -388,6 +389,7 @@ trustmanager.location =${trustmanager.location}
         unless="tomcat.configured">
         <!-- filter for tomcat secure server configuration -->
         <filterset id="security.filters">
+            <filter token="PORT" value="8443"/>
             <filter token="CAFILES" value="${builddir}/certs/grid-security/certificates/*.0"/>
             <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
             <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
@@ -411,12 +413,18 @@ trustmanager.location =${trustmanager.location}
             <fileset dir="${tomcat.location}/common"/>
         </copy>
         <copy toDir="${tomcat.testdir}/server">
-            <fileset dir="${tomcat.location}/server">
-                <exclude name="webapps/**"/>
-            </fileset>
+            <fileset dir="${tomcat.location}/server"/>
+        </copy>
+        <copy toDir="${tomcat.testdir}/conf">
+            <fileset dir="${tomcat.location}/conf"/>
+        </copy>
+        <move file="${tomcat.testdir}/conf/server.xml"
+            tofile="${tomcat.testdir}/conf/server-original.xml"/>
+        <copy file="${glite.location}/share/glite-security-trustmanager/server.xml.template" 
+            toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
+            <filterset refid="security.filters"/>
         </copy>
 
-        <mkdir dir="${tomcat.testdir}/conf"/>
         <copy toDir="${tomcat.testdir}/server/lib" flatten="true">
             <fileset dir="${util-java.location}/share/java">
                 <include name="glite-security-util-java.jar"/>
@@ -429,18 +437,12 @@ trustmanager.location =${trustmanager.location}
                 <include name="**/log4j*.jar"/>
             </fileset>
         </copy>
-        <copy file="${glite.location}/share/glite-security-trustmanager/server.xml.template" 
-            toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
-            <filterset refid="security.filters"/>
-        </copy>
+
         <copy toDir="${tomcat.testdir}/common/lib" flatten="true">
             <fileset dir="${mm-mysql.location}">
                 <include name="**/*.jar"/>
             </fileset>
         </copy>
-        <copy file="${tomcat.location}/conf/web.xml"
-            tofile="${tomcat.testdir}/conf/web.xml"/>
-        <mkdir dir="${tomcat.testdir}/conf/Catalina/localhost"/>
 
         <copy toDir="${tomcat.testdir}/webapps">
             <fileset dir="${tomcat.location}/webapps" includes="ROOT/**"/>
@@ -450,7 +452,7 @@ trustmanager.location =${trustmanager.location}
         <delete dir="${tomcat.testdir}"/>
     </target>
 
-    <target name="tomcat.restart" depends="tomcat.configure,tomcat.stop,tomcat.start"
+    <target name="tomcat.restart" depends="tomcat.stop,tomcat.start"
         description="restarting the application container"/>
     <target name="tomcat.stop" depends="tomcat.configure"
         description="stopping the application container">
