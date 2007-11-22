@@ -36,6 +36,7 @@
         </not>
     </condition>
     <property name="builddir" value="${basedir}/build"/>
+    <property name="testdir" value="${basedir}/build/test"/>
 
     <!-- dumping the most important locations for later use -->
     <target  name="configure">
@@ -115,6 +116,7 @@ trustmanager.location =${trustmanager.location}
 
     <target name="clean">
         <delete dir="${builddir}"/>
+        <delete dir="${testdir}"/>
     </target>
 
     <target name="webapp.soap.generate.check" depends="init">
@@ -214,7 +216,6 @@ trustmanager.location =${trustmanager.location}
                debug="true"
                deprecation="true">
             <classpath refid="compile.classpath"/>
-            <exclude name="**/*Impl.java"/>
         </javac>
     </target>
 
@@ -320,15 +321,6 @@ trustmanager.location =${trustmanager.location}
 		</copy>
 	
 		<mkdir dir="${prefix}/share/doc/glite-data-hydra-service" />
-	
-        <!--
-		<copy toDir="${prefix}/share/doc/glite-data-hydra-service/html">
-			<fileset dir="${builddir}/doc">
-				<include name="**/*" />
-			</fileset>
-		</copy>
-        -->
-        
 		<copy toDir="${prefix}/share/doc/${NAME}">
 			<fileset dir="${basedir}">
 				<include name="LICENSE" />
@@ -339,7 +331,7 @@ trustmanager.location =${trustmanager.location}
         <mkdir dir="${prefix}/etc/${NAME}"/>
 		<copy todir="${prefix}/etc/${NAME}">
 			<fileset dir="config">
-				<include name="*.template" />
+				<include name="context.template.xml" />
 			</fileset>
 		</copy>
 		<copy file="config/config.properties"
@@ -375,6 +367,7 @@ trustmanager.location =${trustmanager.location}
             executable="${glite.location}/share/test/utils/glite-test-certs">
             <arg value="--verbose"/>
             <arg value="--some"/>
+            <arg value="--env"/>
             <arg value="--system"/>
         </exec>
     </target>
@@ -468,5 +461,24 @@ trustmanager.location =${trustmanager.location}
             <arg line="start"/>
          </exec>
     </target>
-    
+
+    <target name="test.configure" depends="webapp,certs.generate,tomcat.configure">
+        <filterset id="context.filters.1">
+            <filter token="DOCBASE" value="${builddir}/webapp"/>
+            <filter token="LOG4JCONFIG" value="${basedir}/config/log4j.properties"/>
+            <filter token="DBUSER" value="hydra1"/>
+            <filter token="DBPASSWORD" value="hydra1"/>
+            <filter token="HOSTNAME" value="localhost"/>
+            <filter token="DBNAME" value="hydra1"/>
+            <filter token="CREATE_VOMS_ATTRIBUTE" value="/acme.org"/>
+            <filter token="ADMIN_VOMS_ATTRIBUTE" value="/acme.org/Role=admin"/>
+            <filter token="VOMSDIR" value="${builddir}/certs/grid-security/vomsdir/*"/>
+        </filterset>
+        <copy file="${basedir}/config/context.template.xml" overwrite="true"
+            toFile="${tomcat.testdir}/Catalina/localhost/1#glite-data-hydra-service.xml">
+            <filterset refid="context.filters.1"/>
+        </copy>
+
+    </target>
+
 </project>
