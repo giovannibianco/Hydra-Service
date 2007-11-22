@@ -33,7 +33,7 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
     // The Metadata Catalog implementation object
     private MetadataCatalogImpl m_catalog = null;
 
-    public MetadataCatalogSoapBindingImpl() throws InternalException {
+    public MetadataCatalogSoapBindingImpl() {
         try {
             m_catalog = new MetadataCatalogImpl();
             
@@ -49,7 +49,6 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
             }
         } catch (Exception e) {
             m_log.error("Error while starting up the catalog: ", e);
-            throw new InternalException("Error while starting up the catalog.");
         }
     }
 
