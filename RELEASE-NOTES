@@ -1,3 +1,13 @@
+*** Release glite-data-hydra-service_R_1_2_0 2007-11-23
+
+	o Upgraded context.xml template to Tomcat 5.5
+	o Simplified configuration format: DB name, user and password 
+	  needs to be specified for each instance.
+	o Removed the gLite/ant build dependencies: one has to specify
+	  the location of the dependencies explicitly. Standalone build.
+	o Removed dependencies: glite-data-common
+	o LICENCE change to Apache2
+
 *** Release glite-data-hydra-service_R_1_1_1 2006-12-14
     
     o DB upgrade script, and explicit check for the 
