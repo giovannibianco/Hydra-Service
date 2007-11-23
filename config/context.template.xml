@@ -75,9 +75,9 @@ authorization_helper_class
         type="org.glite.data.common.helpers.ConfigurationBean"
         factory="org.glite.data.common.helpers.ImplicitContextConfigurationBeanFactory"
 
-        create_voms_attribute="@CREATE_VOMS_ATTRIBUTE@"
-        admin_voms_attribute="@ADMIN_VOMS_ATTRIBUTE@"
-        vomsdir="@VOMSDIR@"
+        create_voms_attribute="@CREATE@"
+        admin_voms_attribute="@ADMIN@"
+        vomsdir="@VOMSDIR@/*"
 
         default_dn="default-dn"
         default_group="default-group"

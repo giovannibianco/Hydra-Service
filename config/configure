@@ -1,0 +1,176 @@
+#!/bin/bash
+#
+# Copyright (c) Members of the EGEE Collaboration. 2004-2007.
+# See http://public.eu-egee.org/partners/ for details on 
+# the copyright holders.
+# For license conditions see the license file or
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Authors: Akos Frohner <Akos.Frohner@cern.ch>
+
+PACKAGENAME='glite-data-hydra-service'
+
+##########################################################################
+# common part
+##########################################################################
+
+USAGE="$0 [--dryrun] [--withpass] [--values config_values_filename] [--configdir config_directory]"
+
+# the text to be printed at the end
+cleanuptext=$cleanuptext"# you can clean up using the following commands\n"
+
+TEMP=$(getopt -o hdw --long help,dryrun,withpass,values:,configdir: -- "$@")
+eval set -- "$TEMP"
+
+while true; do
+    case "$1" in
+        -d|--dryrun)
+            DRYRUN='echo Info:'
+            shift
+            ;;
+        -w|--withpass)
+            WITHPASS='-p'
+            shift
+            ;;
+        --values)
+            shift
+            CONFIGFILE="$1"
+            shift
+            ;;
+        --configdir)
+            shift
+            CONFIGDIR="$1"
+            shift
+            ;;
+        -h|--help)
+            echo $USAGE
+            exit
+            ;;
+        --)
+            # end of options
+            shift
+            break
+            ;;
+    esac
+done
+
+#################################################################
+
+GLITE_LOCATION=${GLITE_LOCATION:-/opt/glite}
+
+if [ ! -d "$GLITE_LOCATION" ]; then
+    echo "Error: '$GLITE_LOCATION' does not exsits." >&2
+    echo "Error: Please specify GLITE_LOCATION!" >&2
+    echo $USAGE >&2
+    exit 1
+fi
+
+#################################################################
+
+CONFIGFILE=${CONFIGFILE:-$GLITE_LOCATION/yaim/etc/site.info}
+
+if [ ! -f "$CONFIGFILE" ]; then
+    echo "Error: Please specify the configuration values file!" >&2
+    echo " (e.g. site.info)" >&2
+    echo $USAGE >&2
+    exit 1
+fi
+
+#################################################################
+
+CONFIGDIR=${CONFIGDIR:-$GLITE_LOCATION/etc/$PACKAGENAME}
+
+if [ ! -d "$CONFIGDIR" ]; then
+    echo "Error: Please specify the configuration directory!" >&2
+    echo " (e.g. /opt/glite/etc/$PACKAGENAME)" >&2
+    echo $USAGE >&2
+    exit 1
+fi
+
+#################################################################
+# looking for the Tomcat directory
+
+if [ -z "$CATALINA_BASE" ]; then
+    # system default
+    [ -r /etc/tomcat5/tomcat5.conf ] && source /etc/tomcat5/tomcat5.conf
+    # RedHat settings
+    [ -r /etc/sysconfig/tomcat5 ] && source /etc/sysconfig/tomcat5
+    # Debian settings
+    [ -r /etc/default/tomcat5 ] && source /etc/default/tomcat5
+fi
+
+# Find Tomcat's webapps dir
+if [ ! -d "${CATALINA_BASE}/conf" ]; then
+    CATALINA_BASE=${CATALINA_HOME}
+fi
+if [ ! -d "${CATALINA_BASE}/conf" ]; then
+    CATALINA_BASE="/var/tomcat5"
+fi
+if [ ! -d "${CATALINA_BASE}/conf" ]; then
+    CATALINA_BASE="/var/lib/tomcat5"
+fi
+if [ ! -d "${CATALINA_BASE}/conf" ]; then
+    echo "Error: Could not find CATALINA_BASE" >&2
+    exit 3
+fi
+if [ ! -d "$CATALINA_BASE/conf/Catalina/localhost" ]; then
+    echo "Error: non default Tomcat installation, where the webapp config directory" >&2
+    echo "   does not exists: $CATALINA_BASE/conf/Catalina/localhost" >&2
+    exit 2
+fi
+
+#################################################################
+# other defaults
+
+DOCBASE=${DOCBASE:-$GLITE_LOCATION/share/java/glite-data-hydra-service.war}
+LOG4JCONFIG=${LOG4JCONFIG:-$GLITE_LOCATION/etc/glite-data-hydra-service/log4j.properties}
+VOMSDIR=${VOMSDIR:-/etc/grid-security/vomsdir}
+HOSTNAME=${HOSTNAME:-$(hostname --fqdn)}
+
+source $CONFIGFILE
+
+for instance in $HYDRA_INSTANCES; do
+    echo ""
+    echo "Configuring '$instance' instance..."
+    ref_DBNAME="HYDRA_DBNAME_$instance"
+    ref_DBUSER="HYDRA_DBUSER_$instance"
+    ref_DBPASSWORD="HYDRA_DBPASSWORD_$instance"
+    ref_CREATE="HYDRA_CREATE_$instance"
+    ref_ADMIN="HYDRA_ADMIN_$instance"
+    context_name="${CATALINA_BASE}/conf/Catalina/localhost/$instance#glite-data-hydra-service.xml"
+    # DB password shall be readable only for tomcat.
+    if [ ! -z "$TOMCAT_USER" ]; then
+        $DRYRUN touch "$context_name"
+        $DRYRUN chmod 0600 "$context_name"
+        $DRYRUN chown $TOMCAT_USER "$context_name"
+    fi
+
+    # generating the context.xml file
+    sedscript="s,@DOCBASE@,$DOCBASE,; s,@LOG4JCONFIG@,$LOG4JCONFIG,; s,@HOSTNAME@,$HOSTNAME,; s/@DBUSER@/${!ref_DBUSER}/; s/@DBPASSWORD@/${!ref_DBPASSWORD}/; s/@DBNAME@/${!ref_DBNAME}/; s,@CREATE@,${!ref_CREATE},; s,@ADMIN@,${!ref_ADMIN},; s,@VOMSDIR@,$VOMSDIR,;"
+    if [ -n "$DRYRUN" ]; then
+        $DRYRUN $sedscript
+    else
+        sed -e "$sedscript" $CONFIGDIR/context.template.xml >"$context_name"
+        cleanuptext=$cleanuptext"    rm '$context_name'\n"
+    fi
+
+    # DB initialization
+    $DRYRUN mysql -u root $WITHPASS -e "CREATE DATABASE ${!ref_DBNAME};
+    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER} identified by '${!ref_DBPASSWORD}';
+    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@$HOSTNAME identified by '${!ref_DBPASSWORD}';
+    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@localhost identified by '${!ref_DBPASSWORD}';
+    flush privileges;"
+    cleanuptext=$cleanuptext"      mysql -u root $WITHPASS -e 'DROP DATABASE ${!ref_DBNAME};'\n"
+    $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -e "source $CONFIGDIR/schema/mysql/mysql-schema.sql"
+done
+
+#################################################################
+# print_cleanup 
+unconfigure="${CONFIGDIR}/unconfigure"
+cleanuptext=$cleanuptext"    rm $unconfigure\n"
+echo -e $cleanuptext
+echo "Info: you can clean up by running '$unconfigure'"
+echo -e "#!/bin/sh\n# this was generated by $0\n" >$unconfigure
+echo -e $cleanuptext >>$unconfigure
+chmod +x $unconfigure
+
