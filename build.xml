@@ -378,15 +378,6 @@ trustmanager.location =${trustmanager.location}
     <target name="tomcat.configure" 
         depends="init,certs.generate" 
         unless="tomcat.configured">
-        <!-- filter for tomcat secure server configuration -->
-        <filterset id="security.filters">
-            <filter token="PORT" value="8443"/>
-            <filter token="CAFILES" value="${builddir}/certs/grid-security/certificates/*.0"/>
-            <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
-            <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
-            <filter token="SSLKEY" value="${builddir}/certs/grid-security/hostkey.pem"/>
-            <filter token="LOG4JCONF" value="${glite.location}/etc/glite-security-trustmanager/log4j-trustmanager.properties"/> 
-        </filterset>
 
         <mkdir dir="${tomcat.testdir}/logs"/>
         <mkdir dir="${tomcat.testdir}/temp"/>
@@ -409,11 +400,20 @@ trustmanager.location =${trustmanager.location}
         <copy toDir="${tomcat.testdir}/conf">
             <fileset dir="${tomcat.location}/conf"/>
         </copy>
+
         <move file="${tomcat.testdir}/conf/server.xml"
             tofile="${tomcat.testdir}/conf/server-original.xml"/>
-        <copy file="${glite.location}/share/glite-security-trustmanager/server.xml.template" 
+
+        <copy file="${basedir}/config/server.template.xml" 
             toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
-            <filterset refid="security.filters"/>
+            <filterset>
+                <filter token="PORT" value="8443"/>
+                <filter token="CAFILES" value="${builddir}/certs/grid-security/certificates/*.0"/>
+                <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
+                <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
+                <filter token="SSLKEY" value="${builddir}/certs/grid-security/hostkey.pem"/>
+                <filter token="LOG4JCONF" value="${basedir}/config/log4j-trustmanager.properties"/> 
+            </filterset>
         </copy>
 
         <copy toDir="${tomcat.testdir}/server/lib" flatten="true">
