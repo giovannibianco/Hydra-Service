@@ -97,6 +97,8 @@ if [ -z "$CATALINA_BASE" ]; then
     [ -r /etc/sysconfig/tomcat5 ] && source /etc/sysconfig/tomcat5
     # Debian settings
     [ -r /etc/default/tomcat5 ] && source /etc/default/tomcat5
+    # test settings
+    [ -n "$TOMCAT5_CONF" ] && source "$TOMCAT5_CONF"
 fi
 
 # Find Tomcat's webapps dir

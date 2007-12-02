@@ -75,7 +75,7 @@ CREATE TABLE t_meta_vers (
   minor INTEGER NOT NULL,
   patch INTEGER NOT NULL
 );
-INSERT INTO t_meta_vers (major,minor,patch) VALUES (1,1,0);
+INSERT INTO t_meta_vers (major,minor,patch) VALUES (1,2,0);
 
 --
 -- Default schema for Hydra keystore
@@ -86,7 +86,9 @@ CREATE TABLE eds (
   edscipher     VARCHAR(50),
   edskey        VARCHAR(200),
   edsiv         VARCHAR(200),
-  edskeyinfo    VARCHAR(200)
+  edskeyinfo    VARCHAR(200),
+  edskeysneeded	INT NOT NULL,
+  edskeyindex	INT NOT NULL
 );
 
 --
