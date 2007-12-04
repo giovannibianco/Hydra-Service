@@ -172,11 +172,13 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         String sqlPrincipal = "INSERT IGNORE INTO t_principal (principal_name) VALUES (?)";
         
         // Prepare the ACL scratch sql string
-        String sqlACLScratch = "DELETE t_acl FROM t_acl, t_entry WHERE t_entry.entry_name = ?";
+        String sqlACLScratch = "DELETE t_acl FROM t_acl, t_entry WHERE t_entry.entry_name = ? AND t_entry.entry_id = t_acl.entry_id";
 
         // Prepare the ACL insert sql string
-        String sqlACL = "INSERT INTO t_acl (entry_id, principal_id, perm)" + " SELECT E.entry_id, P.principal_id, ?" +
-            " FROM t_entry E, t_principal P" + " WHERE E.entry_name = ? AND P.principal_name = ?";
+        String sqlACL = "INSERT INTO t_acl (entry_id, principal_id, perm)" + 
+            " SELECT E.entry_id, P.principal_id, ?" +
+            " FROM t_entry E, t_principal P" + 
+            " WHERE E.entry_name = ? AND P.principal_name = ?";
 
         try {
             conn = m_dbmanager.getConnection(false);
