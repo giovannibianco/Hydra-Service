@@ -82,7 +82,7 @@ INSERT INTO t_meta_vers (major,minor,patch) VALUES (1,2,0);
 --  
 DROP TABLE IF EXISTS eds;
 CREATE TABLE eds (
-  entry_id      INT NOT NULL,
+  entry_id      INT NOT NULL PRIMARY KEY REFERENCES t_entry(entry_id),
   edscipher     VARCHAR(50),
   edskey        VARCHAR(200),
   edsiv         VARCHAR(200),
