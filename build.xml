@@ -404,7 +404,7 @@ trustmanager.location =${trustmanager.location}
         <move file="${tomcat.testdir}/conf/server.xml"
             tofile="${tomcat.testdir}/conf/server-original.xml"/>
 
-        <copy file="${basedir}/config/server.template.xml" 
+        <copy file="${basedir}/test/server.template.xml" 
             toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
             <filterset>
                 <filter token="PORT" value="8443"/>
@@ -412,7 +412,7 @@ trustmanager.location =${trustmanager.location}
                 <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
                 <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
                 <filter token="SSLKEY" value="${builddir}/certs/grid-security/hostkey.pem"/>
-                <filter token="LOG4JCONF" value="${basedir}/config/log4j-trustmanager.properties"/> 
+                <filter token="LOG4JCONF" value="${basedir}/test/log4j-trustmanager.properties"/> 
             </filterset>
         </copy>
 
@@ -456,6 +456,7 @@ trustmanager.location =${trustmanager.location}
         description="starting the application container">
          <echo message="Starting tomcat server"/>
          <exec dir="${tomcat.testdir}/bin/" executable="catalina.sh" resolveexecutable="true">
+            <arg line="jpda"/>
             <arg line="start"/>
          </exec>
     </target>
