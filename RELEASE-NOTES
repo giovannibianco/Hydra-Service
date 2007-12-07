@@ -3,7 +3,6 @@
     o Fixing bug#29851: any ACL change deleted all ACLs, instead of only the
       ones related to the entry.
     o Updated the DB schema (v1.2.0) for split key support (bug#12669)
-	o Split-key support patch from Andrei Krüger <Andrei.Krueger@cern.ch>
 
 *** Release glite-data-hydra-service_R_1_2_0 2007-11-23
 
