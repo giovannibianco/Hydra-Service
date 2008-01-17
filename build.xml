@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-    Copyright (c) Members of the EGEE Collaboration. 2004-2007.
+    Copyright (c) Members of the EGEE Collaboration. 2004-2008.
     See http://public.eu-egee.org/partners/ for details on 
     the copyright holders.
     For license conditions see the license file or
@@ -333,6 +333,8 @@ trustmanager.location =${trustmanager.location}
 			<fileset dir="config">
 				<include name="context.template.xml" />
                 <include name="configure"/>
+                <include name="schema/mysql/*.sql"/>
+                <include name="schema/mysql/README"/>
 			</fileset>
 		</copy>
 		<copy file="config/config.properties"
