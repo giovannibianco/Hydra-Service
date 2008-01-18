@@ -1,3 +1,7 @@
+*** Release glite-data-hydra-service_R_1_3_1_1 2008-01-18
+
+	o Added the DB schema to the RPM
+
 *** Release glite-data-hydra-service_R_1_3_0 2007-12-07
 
     o Fixing bug#29851: any ACL change deleted all ACLs, instead of only the
