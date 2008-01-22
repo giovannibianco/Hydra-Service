@@ -333,6 +333,7 @@ trustmanager.location =${trustmanager.location}
 			<fileset dir="config">
 				<include name="context.template.xml" />
                 <include name="configure"/>
+                <include name="log4j.properties"/>
                 <include name="schema/mysql/*.sql"/>
                 <include name="schema/mysql/README"/>
 			</fileset>
