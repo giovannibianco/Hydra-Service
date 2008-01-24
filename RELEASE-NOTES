@@ -1,6 +1,8 @@
 *** Release glite-data-hydra-service_R_1_3_1_1 2008-01-18
 
 	o Added the DB schema to the RPM
+    o Sanity check of the configuration variables
+    o admin can really do anything, including creating new entires
 
 *** Release glite-data-hydra-service_R_1_3_0 2007-12-07
 
