@@ -1,0 +1,44 @@
+include VERSION
+
+PACKAGE=glite-data-hydra-service
+VPACKAGE=$(PACKAGE)-$(VERSION)
+ifndef RELEASE_SUFFIX
+RELEASE_SUFFIX=$(shell ./get-platform-os)
+endif
+
+rpm: build-rpm RPMS
+	cd build-rpm; rpmbuild --define "_topdir $(PWD)/build-rpm" -ba SPECS/$(VPACKAGE).spec
+	mv build-rpm/SRPMS/*.rpm RPMS/
+	mv build-rpm/RPMS/*/*.rpm RPMS/
+
+build-rpm: tgz/$(VPACKAGE).tar.gz
+	mkdir -p build-rpm/BUILD
+	mkdir -p build-rpm/RPMS
+	mkdir -p build-rpm/SRPMS
+	mkdir -p build-rpm/SOURCES
+	cp tgz/$(VPACKAGE).tar.gz build-rpm/SOURCES/
+	mkdir -p build-rpm/SPECS
+	sed -e  's/@VERSION@/$(VERSION)/g; s/@RELEASE@/$(RELEASE)/g; s/@RELEASE.SUFFIX@/$(RELEASE_SUFFIX)/g;' \
+		$(PACKAGE).template.spec >build-rpm/SPECS/$(VPACKAGE).spec
+
+RPMS:
+	mkdir -p RPMS
+
+SOURCES  = DESCRIPTION LICENSE RELEASE-NOTES VERSION
+SOURCES += build.xml config doc project src test
+
+tgz/$(VPACKAGE).tar.gz: tgz
+	mkdir -p $(VPACKAGE)
+	cp -ur  $(SOURCES) $(VPACKAGE)/ 
+	find $(VPACKAGE)/ -name CVS -print0 | xargs -0 rm -rf 
+	tar -czf tgz/$(VPACKAGE).tar.gz $(VPACKAGE)
+	rm -rf $(VPACKAGE)
+
+tgz:
+	mkdir -p tgz
+
+clean:
+	rm -rf build-rpm 
+
+distclean:
+	rm -rf tgz RPMS
