@@ -28,7 +28,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{prefix}/etc/glite-data-hydra-service/schema/mysql/*
 %{prefix}/etc/glite-data-hydra-service/*
 %{prefix}/share/java/glite-data-hydra-service.war
 %doc %{prefix}/share/doc/glite-data-hydra-service/*
