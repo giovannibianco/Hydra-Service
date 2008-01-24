@@ -333,7 +333,7 @@ trustmanager.location =${trustmanager.location}
 			<fileset dir="config">
 				<include name="context.template.xml" />
                 <include name="configure"/>
-                <include name="log4j.properties"/>
+                <include name="log4j.template.properties"/>
                 <include name="schema/mysql/*.sql"/>
                 <include name="schema/mysql/README"/>
 			</fileset>
@@ -467,10 +467,9 @@ trustmanager.location =${trustmanager.location}
     <target name="test.configure" depends="webapp,certs.generate,tomcat.configure">
         <exec dir="${builddir}" executable="${basedir}/config/configure">
             <env key="CATALINA_BASE" value="${tomcat.testdir}"/>
-            <env key="CONFIGFILE" value="${basedir}/config/config.properties"/>
+            <env key="CONFIGFILE" value="${basedir}/test/config.properties"/>
             <env key="CONFIGDIR" value="${basedir}/config"/>
             <env key="DOCBASE" value="${builddir}/webapp"/>
-            <env key="LOG4JCONFIG" value="${basedir}/config/log4j.properties"/>
             <env key="VOMSDIR" value="${builddir}/certs/grid-security/vomsdir"/>
             <env key="HOSTNAME" value="localhost"/>
         </exec>

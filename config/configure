@@ -125,11 +125,39 @@ fi
 # other defaults
 
 DOCBASE=${DOCBASE:-$GLITE_LOCATION/share/java/glite-data-hydra-service.war}
-LOG4JCONFIG=${LOG4JCONFIG:-$GLITE_LOCATION/etc/glite-data-hydra-service/log4j.properties}
 VOMSDIR=${VOMSDIR:-/etc/grid-security/vomsdir}
 HOSTNAME=${HOSTNAME:-$(hostname --fqdn)}
 
 source $CONFIGFILE
+
+# let's do some sanity check first on the configuration variables:
+all_hydra_vars=${!HYDRA_*}
+
+if [ -z "$HYDRA_INSTANCES" ]; then
+    echo "Error: HYDRA_INSTANCES is not defined" >&2
+    exit 2
+fi
+
+# poor man's associative array in bash
+all_hydra_vars=$(echo "$all_hydra_vars" | sed -e "s/HYDRA_INSTANCES//")
+for instance in $HYDRA_INSTANCES; do
+    for instance_ref in \
+        "HYDRA_DBNAME_$instance" \
+        "HYDRA_DBUSER_$instance" \
+        "HYDRA_DBPASSWORD_$instance" \
+        "HYDRA_CREATE_$instance" \
+        "HYDRA_ADMIN_$instance"; do
+        if [ -z "${!instance_ref}" ]; then
+            echo "Error: $instance_ref is not defined" >&2
+            exit 2
+        fi
+        all_hydra_vars=$(echo "$all_hydra_vars" | sed -e "s/$instance_ref//")
+    done
+done
+
+for unused_var in $all_hydra_vars; do
+    echo "Warning: $unused_var='${!unused_var}' is not used for configuration!" >&2
+done
 
 for instance in $HYDRA_INSTANCES; do
     echo ""
@@ -140,6 +168,7 @@ for instance in $HYDRA_INSTANCES; do
     ref_CREATE="HYDRA_CREATE_$instance"
     ref_ADMIN="HYDRA_ADMIN_$instance"
     context_name="${CATALINA_BASE}/conf/Catalina/localhost/$instance#glite-data-hydra-service.xml"
+    log4j_name="$CONFIGDIR/log4j.$instance.properties"
     # DB password shall be readable only for tomcat.
     if [ ! -z "$TOMCAT_USER" ]; then
         $DRYRUN touch "$context_name"
@@ -147,8 +176,17 @@ for instance in $HYDRA_INSTANCES; do
         $DRYRUN chown $TOMCAT_USER "$context_name"
     fi
 
+    # generating the log4j.properties file
+    sedscript="s,@INSTANCE@,$instance,;"
+    if [ -n "$DRYRUN" ]; then
+        $DRYRUN $sedscript
+    else
+        sed -e "$sedscript" $CONFIGDIR/log4j.template.properties >"$log4j_name"
+        cleanuptext=$cleanuptext"    rm '$log4j_name'\n"
+    fi
+
     # generating the context.xml file
-    sedscript="s,@DOCBASE@,$DOCBASE,; s,@LOG4JCONFIG@,$LOG4JCONFIG,; s,@HOSTNAME@,$HOSTNAME,; s/@DBUSER@/${!ref_DBUSER}/; s/@DBPASSWORD@/${!ref_DBPASSWORD}/; s/@DBNAME@/${!ref_DBNAME}/; s,@CREATE@,${!ref_CREATE},; s,@ADMIN@,${!ref_ADMIN},; s,@VOMSDIR@,$VOMSDIR,;"
+    sedscript="s,@DOCBASE@,$DOCBASE,; s,@LOG4JCONFIG@,$log4j_name,; s,@HOSTNAME@,$HOSTNAME,; s/@DBUSER@/${!ref_DBUSER}/; s/@DBPASSWORD@/${!ref_DBPASSWORD}/; s/@DBNAME@/${!ref_DBNAME}/; s,@CREATE@,${!ref_CREATE},; s,@ADMIN@,${!ref_ADMIN},; s,@VOMSDIR@,$VOMSDIR,;"
     if [ -n "$DRYRUN" ]; then
         $DRYRUN $sedscript
     else
