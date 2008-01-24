@@ -365,6 +365,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
         // admin can do anything
         if((adminVomsAttribute != null) && principalList.contains(adminVomsAttribute)) {
+            m_log.info(clientName + " is authorized as admin");
             return;
         }
 
@@ -466,12 +467,14 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         
         // admin can do anything
         if((adminVomsAttribute != null) && principalList.contains(adminVomsAttribute)) {
+            m_log.info(clientName + " is authorized as admin");
             return;
         }
 
         // TODO: implement these tests as permissions on schema objects
         if(patternPerm.isWrite()) {
             if((createVomsAttribute != null) && (!principalList.contains(createVomsAttribute))) {
+                m_log.debug("client is not allowed to create a new entry in " + schema);
                 throw new AuthorizationException("client is not allowed to create a new entry in " + schema);
             }
             else {
