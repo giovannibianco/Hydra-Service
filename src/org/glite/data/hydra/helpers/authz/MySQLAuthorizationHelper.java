@@ -363,6 +363,11 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
     	principalList.add(clientName); // add the client dn to the list       
 
+        // admin can do anything
+        if((adminVomsAttribute != null) && principalList.contains(adminVomsAttribute)) {
+            return;
+        }
+
         // Prepare the basic permissions sql string
         String sqlBasicPerm = "SELECT P1.principal_name AS owner_name, P2.principal_name AS group_name, E.user_perm, E.group_perm, E.other_perm" +
             " FROM t_entry E, t_principal P1, t_principal P2" +
@@ -459,6 +464,11 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         List principalList = MySQLAuthorizationHelper.getAuthzAttributeList();
         principalList.add(clientName); // add the client dn to the list
         
+        // admin can do anything
+        if((adminVomsAttribute != null) && principalList.contains(adminVomsAttribute)) {
+            return;
+        }
+
         // TODO: implement these tests as permissions on schema objects
         if(patternPerm.isWrite()) {
             if((createVomsAttribute != null) && (!principalList.contains(createVomsAttribute))) {
