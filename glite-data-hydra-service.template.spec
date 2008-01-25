@@ -21,7 +21,7 @@ rm -rf $RPM_BUILD_ROOT
 %setup -q
 
 %install
-ant -Dprefix=$RPM_BUILD_ROOT/%{prefix} ${EXTRA_CONFIGURE_OPTIONS} install
+ant -Dprefix=$RPM_BUILD_ROOT/%{prefix} ${EXTRA_CONFIGURE_OPTIONS} configure install
 
 %clean
 rm -rf $RPM_BUILD_ROOT 

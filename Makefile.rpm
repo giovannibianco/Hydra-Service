@@ -40,5 +40,5 @@ tgz:
 clean:
 	rm -rf build-rpm 
 
-distclean:
+distclean: clean
 	rm -rf tgz RPMS
