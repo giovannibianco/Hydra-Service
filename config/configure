@@ -14,12 +14,12 @@ PACKAGENAME='glite-data-hydra-service'
 # common part
 ##########################################################################
 
-USAGE="$0 [--dryrun] [--withpass] [--values config_values_filename] [--configdir config_directory]"
+USAGE="$0 [--dryrun] [--withpass=<password>] [--values config_values_filename] [--configdir config_directory]"
 
 # the text to be printed at the end
 cleanuptext=$cleanuptext"# you can clean up using the following commands\n"
 
-TEMP=$(getopt -o hdw --long help,dryrun,withpass,values:,configdir: -- "$@")
+TEMP=$(getopt -o hdw: --long help,dryrun,withpass:,values:,configdir: -- "$@")
 eval set -- "$TEMP"
 
 while true; do
@@ -29,7 +29,8 @@ while true; do
             shift
             ;;
         -w|--withpass)
-            WITHPASS='-p'
+            shift
+            WITHPASS="--pass=$1"
             shift
             ;;
         --values)
@@ -102,22 +103,13 @@ if [ -z "$CATALINA_BASE" ]; then
 fi
 
 # Find Tomcat's webapps dir
-if [ ! -d "${CATALINA_BASE}/conf" ]; then
-    CATALINA_BASE=${CATALINA_HOME}
-fi
-if [ ! -d "${CATALINA_BASE}/conf" ]; then
-    CATALINA_BASE="/var/tomcat5"
-fi
-if [ ! -d "${CATALINA_BASE}/conf" ]; then
-    CATALINA_BASE="/var/lib/tomcat5"
-fi
-if [ ! -d "${CATALINA_BASE}/conf" ]; then
-    echo "Error: Could not find CATALINA_BASE" >&2
-    exit 3
-fi
-if [ ! -d "$CATALINA_BASE/conf/Catalina/localhost" ]; then
-    echo "Error: non default Tomcat installation, where the webapp config directory" >&2
-    echo "   does not exists: $CATALINA_BASE/conf/Catalina/localhost" >&2
+for TOMCAT_CONF in ${CATALINA_HOME}/conf /var/tomcat5/conf /var/lib/tomcat5/conf /etc/tomcat5; do
+    if [ -r ${TOMCAT_CONF}/server.xml ]; then
+        break
+    fi
+done
+if [ ! -r "${TOMCAT_CONF}/server.xml" ]; then
+    echo "Error: could not find Tomcat5 configuration directory!" >&2
     exit 2
 fi
 
@@ -125,68 +117,38 @@ fi
 # other defaults
 
 DOCBASE=${DOCBASE:-$GLITE_LOCATION/share/java/glite-data-hydra-service.war}
+LOG4JCONFIG=${LOG4JCONFIG:-$GLITE_LOCATION/etc/glite-data-hydra-service/log4j.properties}
 VOMSDIR=${VOMSDIR:-/etc/grid-security/vomsdir}
 HOSTNAME=${HOSTNAME:-$(hostname --fqdn)}
+DBHOSTNAME=${HYDRA_DB_HOSTNAME:-$HOSTNAME}
 
 source $CONFIGFILE
 
-# let's do some sanity check first on the configuration variables:
-all_hydra_vars=${!HYDRA_*}
-
-if [ -z "$HYDRA_INSTANCES" ]; then
-    echo "Error: HYDRA_INSTANCES is not defined" >&2
-    exit 2
-fi
-
-# poor man's associative array in bash
-all_hydra_vars=$(echo "$all_hydra_vars" | sed -e "s/HYDRA_INSTANCES//")
-for instance in $HYDRA_INSTANCES; do
-    for instance_ref in \
-        "HYDRA_DBNAME_$instance" \
-        "HYDRA_DBUSER_$instance" \
-        "HYDRA_DBPASSWORD_$instance" \
-        "HYDRA_CREATE_$instance" \
-        "HYDRA_ADMIN_$instance"; do
-        if [ -z "${!instance_ref}" ]; then
-            echo "Error: $instance_ref is not defined" >&2
-            exit 2
-        fi
-        all_hydra_vars=$(echo "$all_hydra_vars" | sed -e "s/$instance_ref//")
-    done
-done
-
-for unused_var in $all_hydra_vars; do
-    echo "Warning: $unused_var='${!unused_var}' is not used for configuration!" >&2
-done
-
 for instance in $HYDRA_INSTANCES; do
     echo ""
-    echo "Configuring '$instance' instance..."
+    echo "Info: Configuring '$instance' instance..."
     ref_DBNAME="HYDRA_DBNAME_$instance"
     ref_DBUSER="HYDRA_DBUSER_$instance"
     ref_DBPASSWORD="HYDRA_DBPASSWORD_$instance"
     ref_CREATE="HYDRA_CREATE_$instance"
     ref_ADMIN="HYDRA_ADMIN_$instance"
-    context_name="${CATALINA_BASE}/conf/Catalina/localhost/$instance#glite-data-hydra-service.xml"
-    log4j_name="$CONFIGDIR/log4j.$instance.properties"
+    context_name="${TOMCAT_CONF}/Catalina/localhost/$instance#glite-data-hydra-service.xml"
+
+    # sanity checks
+    echo "${!ref_DBPASSWORD}" | grep -q '@'
+    if [ $? -eq 0 ]; then
+        echo "Error: DB password for instance '$instance' cannot contain the '@' character!" >&2
+        exit 5
+    fi
     # DB password shall be readable only for tomcat.
-    if [ ! -z "$TOMCAT_USER" ]; then
+    if [ -n "$TOMCAT_USER" ]; then
         $DRYRUN touch "$context_name"
         $DRYRUN chmod 0600 "$context_name"
         $DRYRUN chown $TOMCAT_USER "$context_name"
     fi
 
-    # generating the log4j.properties file
-    sedscript="s,@INSTANCE@,$instance,;"
-    if [ -n "$DRYRUN" ]; then
-        $DRYRUN $sedscript
-    else
-        sed -e "$sedscript" $CONFIGDIR/log4j.template.properties >"$log4j_name"
-        cleanuptext=$cleanuptext"    rm '$log4j_name'\n"
-    fi
-
-    # generating the context.xml file
-    sedscript="s,@DOCBASE@,$DOCBASE,; s,@LOG4JCONFIG@,$log4j_name,; s,@HOSTNAME@,$HOSTNAME,; s/@DBUSER@/${!ref_DBUSER}/; s/@DBPASSWORD@/${!ref_DBPASSWORD}/; s/@DBNAME@/${!ref_DBNAME}/; s,@CREATE@,${!ref_CREATE},; s,@ADMIN@,${!ref_ADMIN},; s,@VOMSDIR@,$VOMSDIR,;"
+    echo "Info: generating the Tomcat service context XML file."
+    sedscript="s,@DOCBASE@,$DOCBASE,; s,@LOG4JCONFIG@,$LOG4JCONFIG,; s,@HOSTNAME@,$HOSTNAME,; s/@DBUSER@/${!ref_DBUSER}/; s/@DBPASSWORD@/${!ref_DBPASSWORD}/; s/@DBNAME@/${!ref_DBNAME}/; s,@CREATE@,${!ref_CREATE},; s,@ADMIN@,${!ref_ADMIN},; s,@VOMSDIR@,$VOMSDIR,;"
     if [ -n "$DRYRUN" ]; then
         $DRYRUN $sedscript
     else
@@ -194,23 +156,59 @@ for instance in $HYDRA_INSTANCES; do
         cleanuptext=$cleanuptext"    rm '$context_name'\n"
     fi
 
-    # DB initialization
-    $DRYRUN mysql -u root $WITHPASS -e "CREATE DATABASE ${!ref_DBNAME};
-    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER} identified by '${!ref_DBPASSWORD}';
-    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@$HOSTNAME identified by '${!ref_DBPASSWORD}';
-    grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@localhost identified by '${!ref_DBPASSWORD}';
-    flush privileges;"
-    cleanuptext=$cleanuptext"      mysql -u root $WITHPASS -e 'DROP DATABASE ${!ref_DBNAME};'\n"
-    $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -e "source $CONFIGDIR/schema/mysql/mysql-schema.sql"
+    # check if the schema already exists
+    schema_version=''
+    if [ -n "$DRYRUN" ]; then
+        $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -BN -e "source $CONFIGDIR/schema/mysql/mysql-get-version.sql;"
+    else
+        schema_version=$(mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -BN -e "source $CONFIGDIR/schema/mysql/mysql-get-version.sql;")
+        if [ $? -ne 0 ]; then
+            schema_version=''
+        fi
+    fi
+
+    if [ -z "$schema_version" ]; then
+        echo "Info: creating the DB user."
+        $DRYRUN mysql -u root -h $DBHOSTNAME $WITHPASS -e "CREATE DATABASE ${!ref_DBNAME};
+        grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER} identified by '${!ref_DBPASSWORD}';
+        grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@$HOSTNAME identified by '${!ref_DBPASSWORD}';
+        grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@localhost identified by '${!ref_DBPASSWORD}';
+        flush privileges;"
+        if [ $? -ne 0 ]; then
+            echo "Error: could not create the DB user!" >&2
+            exit 5
+        fi
+        cleanuptext=$cleanuptext"      mysql -u root $WITHPASS -e 'DROP DATABASE ${!ref_DBNAME};'\n"
+        
+        echo "Info: loading the schema."
+        $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -e "source $CONFIGDIR/schema/mysql/mysql-schema.sql"
+        if [ $? -ne 0 ]; then
+            echo "Error: could not load the DB schema!" >&2
+            exit 5
+        fi
+    elif [ "1.1.0" = "$schema_version" ]; then
+        echo "Info: upgrading the schema from v1.1.0 to v1.2.0 on instance '$instance'"
+        $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -e "source $CONFIGDIR/schema/mysql/mysql-upgrade-1.1.0-1.2.0.sql"
+        if [ $? -ne 0 ]; then
+            echo "Error: could not upgrade the database!" >&2
+            exit 5
+        fi
+    elif [ "1.2.0" = "$schema_version" ]; then
+        echo "Info: shcema is already loaded."
+    else
+        echo "Error: unknown schema version: $schema_version" >&2
+        exit 5
+    fi
 done
 
 #################################################################
 # print_cleanup 
 unconfigure="${CONFIGDIR}/unconfigure"
 cleanuptext=$cleanuptext"    rm $unconfigure\n"
-echo -e $cleanuptext
 echo "Info: you can clean up by running '$unconfigure'"
-echo -e "#!/bin/sh\n# this was generated by $0\n" >$unconfigure
+# there is the DB password in this file, should be protected
+touch $unconfigure
+chmod 0700 $unconfigure
+echo -e "#!/bin/sh\n# this was generated by $0\n" >>$unconfigure
 echo -e $cleanuptext >>$unconfigure
-chmod +x $unconfigure
 
