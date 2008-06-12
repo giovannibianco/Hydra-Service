@@ -1,0 +1,221 @@
+#!/bin/bash
+#
+# Copyright (c) Members of the EGEE Collaboration. 2008.
+# See http://public.eu-egee.org/partners/ for details on 
+# the copyright holders.
+# For license conditions see the license file or
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Authors: Akos Frohner <Akos.Frohner@cern.ch>
+
+PACKAGENAME='glite-data-hydra-service'
+TOMCAT_PORT='8443'
+VERSION='@INTERFACE_VERSION@'
+
+##########################################################################
+# common part
+##########################################################################
+
+USAGE="$0 [--configdir config_directory]"
+
+# the text to be printed at the end
+cleanuptext=$cleanuptext"# you can clean up using the following commands\n"
+
+TEMP=$(getopt -o bfv: --long values:,bdii,file -- "$@")
+eval set -- "$TEMP"
+
+INFOSYS='bdii'
+
+while true; do
+    case "$1" in
+        --values)
+            shift
+            CONFIGFILE="$1"
+            shift
+            ;;
+        -b|--bdii)
+            shift
+            INFOSYS='bdii'
+            ;;
+        -f|--file)
+            shift
+            INFOSYS='file'
+            ;;
+        -h|--help)
+            echo $USAGE
+            exit
+            ;;
+        --)
+            # end of options
+            shift
+            break
+            ;;
+    esac
+done
+
+HOSTNAME=${HOSTNAME:-$(hostname --fqdn)}
+
+#######################################################################
+# printing information
+
+function print_start {
+    if [ "$INFOSYS" = "bdii" ]; then
+        echo "# Produced by "$(basename $0)" on "$(hostname --fqdn)
+        echo "# with options: $0 $OPTIONS"
+    elif [ "$INFOSYS" = "file" ]; then
+        cat <<EOF
+<!DOCTYPE services
+    PUBLIC "-//gLite//DTD glite-service-discovery-file 1.0//EN"
+    "http://egee-jra1-data.web.cern.ch/egee-jra1-data/dtd/service-discovery/1.0/services.dtd">
+<!-- Produced by $(basename $0) on $(hostname --fqdn) -->
+<!-- with options: $0 $OPTIONS -->
+<services>
+EOF
+    else
+        echo "ERROR: unknown information system: '$INFOSYS'" >&2
+        exit 1
+    fi
+}
+
+function print_end {
+    if [ "$INFOSYS" = "bdii" ]; then
+        echo ""
+    elif [ "$INFOSYS" = "file" ]; then
+        echo "</services>"
+    else
+        echo "ERROR: unknown information system: '$INFOSYS'" >&2
+        exit 1
+    fi
+}
+
+function print_service {
+    if [ "$INFOSYS" = "bdii" ]; then
+        print_service_bdii "$@"
+    elif [ "$INFOSYS" = "file" ]; then
+        print_service_file "$@"
+    else
+        echo "ERROR: unknown information system: '$INFOSYS'" >&2
+        exit 1
+    fi
+}
+
+function print_service_bdii {
+NAME="$1"
+ENDPOINT="$2"
+VOS="$3"
+ASSOCIATED="$4"
+cat <<EOF
+dn: GlueServiceUniqueID=${NAME},mds-vo-name=local,o=grid
+objectClass: GlueTop
+objectClass: GlueService
+objectClass: GlueSchemaVersion
+objectClass: GlueKey
+GlueServiceUniqueID: ${NAME}
+GlueServiceName: $NAME
+GlueServiceType: org.glite.Metadata
+GlueServiceVersion: $VERSION
+GlueServiceEndpoint: $ENDPOINT
+GlueServiceWSDL: $ENDPOINT?wsdl
+GlueServiceAccessPointURL: $ENDPOINT?wsdl
+GlueServiceSemantics: normal
+GlueServiceStartTime: $DATE
+GlueSchemaVersionMajor: 1
+GlueSchemaVersionMinor: 3
+EOF
+for as in $ASSOCIATED; do
+    echo "GlueForeignKey: GlueServiceUniqueID=${as}"
+done
+for vo in $VOS; do 
+    echo "GlueServiceOwner: $vo"
+    echo "GlueServiceAccessControlRule: $vo"
+done
+# end-of-ldif-record
+echo ""
+
+}
+
+function print_service_file {
+NAME="$1"
+ENDPOINT="$2"
+VOS="$3"
+ASSOCIATED="$4"
+cat <<EOF
+  <service name='${NAME}'>
+    <parameters>
+      <endpoint>$ENDPOINT</endpoint>
+      <type>org.glite.Metadata</type>
+      <version>$VERSION</version>
+      <wsdl>$ENDPOINT?wsdl</wsdl>
+EOF
+if [ -n "$VOS" ]; then
+    echo '      <volist>'
+    for vo in $VOS; do echo "        <vo>$vo</vo>"; done
+    echo '      </volist>'
+fi
+cat <<EOF
+    </parameters>
+    <associatedservices>
+EOF
+for as in $ASSOCIATED; do
+    echo "      <name>${as}</name>"
+done
+cat <<EOF
+    </associatedservices>
+  </service>
+EOF
+}
+
+#######################################################################
+# system parameters
+if [ -e "/var/run/tomcat5.pid" ]; then
+    DATE=$(stat -c %z /var/run/tomcat5.pid)
+else
+    DATE=$(date +%FT%T)
+fi
+
+##################### main ###############################################
+
+source $CONFIGFILE
+
+print_start
+
+for instance in $HYDRA_INSTANCES; do
+    NAME="${instance}_${PACKAGENAME}_${HOSTNAME}"
+    ENDPOINT="https://${HOSTNAME}:${TOMCAT_PORT}/${instance}/${PACKAGENAME}/services/Hydra"
+    ref_CREATE="HYDRA_CREATE_$instance"
+    VOS="${!ref_CREATE}"
+
+    ASSOCIATED=""
+    # Iterating through all the services to find the peers,
+    # which have the same set of VOs supported for entry
+    # creation.
+    for associated in $HYDRA_INSTANCES $HYDRA_PEERS; do
+
+        # if this is the currently processed service, then skip
+        if [ "$instance" = "$associated" ]; then
+            continue
+        fi
+
+        ref_assoc_CREATE="HYDRA_CREATE_${associated}"
+        assoc_VOS="${!ref_assoc_CREATE}"
+
+        # if the set of supported VOs is different, then skip
+        if [ "$VOS" != "$assoc_VOS" ]; then
+            continue
+        fi
+
+        ref_assoc_HOSTNAME="HYDRA_HOST_${associated}"
+        assoc_HOSTNAME="${!ref_assoc_HOSTNAME:-${HOSTNAME}}"
+        ref_assoc_ID="HYDRA_ID_${associated}"
+        assoc_ID="${!ref_assoc_ID:-${associated}}"
+        assoc_NAME="${assoc_ID}_${PACKAGENAME}_${assoc_HOSTNAME}"
+
+        ASSOCIATED="$ASSOCIATED $assoc_NAME"
+    done
+
+    print_service "$NAME" "$ENDPOINT" "$VOS" "$ASSOCIATED"
+
+done
+
+print_end
+

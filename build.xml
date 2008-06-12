@@ -332,7 +332,6 @@ trustmanager.location =${trustmanager.location}
 		<copy todir="${prefix}/etc/${NAME}">
 			<fileset dir="config">
 				<include name="context.template.xml" />
-                <include name="configure"/>
                 <include name="log4j.template.properties"/>
                 <include name="schema/mysql/*.sql"/>
                 <include name="schema/mysql/README"/>
@@ -340,7 +339,15 @@ trustmanager.location =${trustmanager.location}
 		</copy>
 		<copy file="config/config.properties"
               tofile="${prefix}/etc/${NAME}/config.properties.example"/>
+		<copy todir="${prefix}/etc/${NAME}">
+			<fileset dir="config">
+				<include name="info-provider" />
+                <include name="configure"/>
+			</fileset>
+            <filterset refid="module.filters"/>
+		</copy>
         <chmod file="${prefix}/etc/${NAME}/configure" perm="ugo+rx"/>
+        <chmod file="${prefix}/etc/${NAME}/info-provider" perm="ugo+rx"/>
     </target>
 
     <target name="tar">
