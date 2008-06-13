@@ -105,7 +105,7 @@ ENDPOINT="$2"
 VOS="$3"
 ASSOCIATED="$4"
 cat <<EOF
-dn: GlueServiceUniqueID=${NAME},mds-vo-name=local,o=grid
+dn: GlueServiceUniqueID=${NAME},mds-vo-name=resource,o=grid
 objectClass: GlueTop
 objectClass: GlueService
 objectClass: GlueSchemaVersion
