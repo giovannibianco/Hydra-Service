@@ -1,0 +1,10 @@
+#!/bin/bash
+
+basedir=${0%/*/*}
+
+if [ ! -r "$basedir/location.properties" ]; then 
+    echo "location.properties is missing!" >&2
+    exit 2
+fi
+
+EXTRA_CONFIGURE_OPTIONS="$(awk -F'[ \t=]+' '/location/ { print "-D"$1"="$2 }' location.properties)" make -f Makefile.rpm rpm
