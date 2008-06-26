@@ -1,3 +1,8 @@
+*** Release glite-data-hydra-service_R_1_3_2_1 2008-06-26
+
+    o Configuration with schema loading and per-instance logging.
+    o Info provider with associated services.
+
 *** Release glite-data-hydra-service_R_1_3_1_1 2008-01-18
 
     o Added the DB schema to the RPM
