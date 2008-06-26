@@ -53,21 +53,21 @@ while true; do
     esac
 done
 
-HOSTNAME=${HOSTNAME:-$(hostname --fqdn)}
+HOSTNAME=$(hostname --fqdn)
 
 #######################################################################
 # printing information
 
 function print_start {
     if [ "$INFOSYS" = "bdii" ]; then
-        echo "# Produced by "$(basename $0)" on "$(hostname --fqdn)
+        echo "# Produced by "$(basename $0)" on $HOSTNAME"
         echo "# with options: $0 $OPTIONS"
     elif [ "$INFOSYS" = "file" ]; then
         cat <<EOF
 <!DOCTYPE services
     PUBLIC "-//gLite//DTD glite-service-discovery-file 1.0//EN"
     "http://egee-jra1-data.web.cern.ch/egee-jra1-data/dtd/service-discovery/1.0/services.dtd">
-<!-- Produced by $(basename $0) on $(hostname --fqdn) -->
+<!-- Produced by $(basename $0) on $HOSTNAME -->
 <!-- with options: $0 $OPTIONS -->
 <services>
 EOF
