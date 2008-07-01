@@ -1,3 +1,7 @@
+*** Release glite-data-hydra-service_R_1_3_3_1 2008-07-01
+
+	o Full VOMS FQAN should not be published, only the VO name by the info-provider.
+
 *** Release glite-data-hydra-service_R_1_3_2_1 2008-06-26
 
     o Configuration with schema loading and per-instance logging.
