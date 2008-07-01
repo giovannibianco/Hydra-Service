@@ -184,6 +184,8 @@ for instance in $HYDRA_INSTANCES; do
     ENDPOINT="https://${HOSTNAME}:${TOMCAT_PORT}/${instance}/${PACKAGENAME}/services/Hydra"
     ref_CREATE="HYDRA_CREATE_$instance"
     VOS="${!ref_CREATE}"
+    VOS=${VOS#/}
+    VOS=${VOS%%/*}
 
     ASSOCIATED=""
     # Iterating through all the services to find the peers,
@@ -198,6 +200,8 @@ for instance in $HYDRA_INSTANCES; do
 
         ref_assoc_CREATE="HYDRA_CREATE_${associated}"
         assoc_VOS="${!ref_assoc_CREATE}"
+        assoc_VOS=${assoc_VOS#/}
+        assoc_VOS=${assoc_VOS%%/*}
 
         # if the set of supported VOs is different, then skip
         if [ "$VOS" != "$assoc_VOS" ]; then
