@@ -181,7 +181,7 @@ for instance in $HYDRA_INSTANCES; do
         echo "Info: creating the DB user."
         $DRYRUN mysql -u root -h $DBHOSTNAME $WITHPASS -e "CREATE DATABASE ${!ref_DBNAME};
         grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER} identified by '${!ref_DBPASSWORD}';
-        grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@$HOSTNAME identified by '${!ref_DBPASSWORD}';
+        grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@'$HOSTNAME' identified by '${!ref_DBPASSWORD}';
         grant ALL PRIVILEGES on ${!ref_DBNAME}.* to ${!ref_DBUSER}@localhost identified by '${!ref_DBPASSWORD}';
         flush privileges;"
         if [ $? -ne 0 ]; then
