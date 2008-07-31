@@ -9,7 +9,6 @@
 # Authors: Akos Frohner <Akos.Frohner@cern.ch>
 
 PACKAGENAME='glite-data-hydra-service'
-TOMCAT_PORT='8443'
 VERSION='@INTERFACE_VERSION@'
 
 ##########################################################################
@@ -176,6 +175,7 @@ fi
 ##################### main ###############################################
 
 source $CONFIGFILE
+TOMCAT_PORT=${TOMCAT_PORT:-8443}
 
 print_start
 
