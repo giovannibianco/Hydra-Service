@@ -8,7 +8,10 @@ Group: System/Middleware
 Prefix: /opt/glite
 BuildArch: noarch
 BuildRoot: %{_builddir}/%{name}-root
-AutoReqProv: yes
+AutoReqProv: no
+Requires: glite-security-trustmanager >= 1.8.11
+Requires: tomcat5 >= 5.5
+Requires: mysql-connector-java
 Source: %{name}-%{version}.tar.gz
 
 %define debug_package %{nil}
