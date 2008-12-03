@@ -171,7 +171,7 @@ for instance in $HYDRA_INSTANCES; do
     if [ -n "$DRYRUN" ]; then
         $DRYRUN mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -BN -e "source $CONFIGDIR/schema/mysql/mysql-get-version.sql;"
     else
-        schema_version=$(mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -BN -e "source $CONFIGDIR/schema/mysql/mysql-get-version.sql;")
+        schema_version=$(mysql -u ${!ref_DBUSER} -p${!ref_DBPASSWORD} -D ${!ref_DBNAME} -BN -e "source $CONFIGDIR/schema/mysql/mysql-get-version.sql;" 2>/dev/null)
         if [ $? -ne 0 ]; then
             schema_version=''
         fi
