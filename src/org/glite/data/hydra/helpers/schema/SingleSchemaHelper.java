@@ -26,14 +26,14 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public void addSchema(String schemaName, Attribute[] attributes)
         throws ExistsException, InvalidArgumentException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.SchemaHelper#removeSchema(java.lang.String)
      */
     public void removeSchema(String schemaName) throws NotExistsException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
@@ -41,7 +41,7 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public void removeSchemaAttributes(String schemaName, String[] attributeNames)
         throws NotExistsException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
@@ -49,7 +49,7 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public String[] getSchemas(String schemaNnamePattern)
         throws InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
         return null;
     }
 
@@ -58,7 +58,7 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public Attribute[] getSchemaDescription(String schemaName)
         throws NotExistsException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
         return null;
     }
 
@@ -67,7 +67,7 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public void addSchemaAttributes(String schemaName, Attribute[] attributeNames)
         throws ExistsException, InternalException, InvalidArgumentException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
@@ -75,7 +75,7 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public void checkSchemaNameValidity(String schemaName)
         throws InvalidArgumentException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
@@ -83,14 +83,14 @@ public class SingleSchemaHelper extends SchemaHelper {
      */
     public void checkAttributesValidity(Attribute[] attributes)
         throws InvalidArgumentException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.SchemaHelper#getSchemaId(java.lang.String)
      */
     public int getSchemaId(String schemaName) throws org.glite.data.catalog.service.InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty 
         return 0;
     }
 }
