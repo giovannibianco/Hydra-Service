@@ -30,9 +30,8 @@ import java.lang.reflect.Method;
  * {@link #get} rather than caching, so is not designed for heavy use.
  */
 public abstract class ContextConfigurationBean implements ConfigurationBean {
-    /* Log4j logger for class
-    */
-    private final static Logger m_log = Logger.getLogger("org.glite.data.common.helpers.ContextConfigurationBean");
+    /* Log4j logger for class */
+    private final static Logger m_log = Logger.getLogger(ContextConfigurationBean.class);
     private PropertyDescriptor[] m_beanProps = null;
 
     public ContextConfigurationBean() {

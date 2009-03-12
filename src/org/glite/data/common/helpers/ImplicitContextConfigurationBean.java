@@ -18,9 +18,8 @@ import java.util.Properties;
  * application. <br><br> The bean autoinitialised by its factory upon creation.
  */
 public class ImplicitContextConfigurationBean implements ConfigurationBean {
-    /* Log4j logger for class org.glite.data.common.helpers.ImplicitContextConfigurationBean */
-    private final static Logger m_log = Logger.getLogger(
-            "org.glite.data.common.helpers.ImplicitContextConfigurationBean");
+    /* Log4j logger for class */
+    private final static Logger m_log = Logger.getLogger(ImplicitContextConfigurationBean.class);
     private Properties m_props;
 
     public ImplicitContextConfigurationBean() {

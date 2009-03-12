@@ -19,8 +19,8 @@ import java.io.InputStreamReader;
  * See {@link org.glite.data.common.helpers.CommandResult} for usage.
  */
 public class StreamChomp extends Thread {
-    /* Log4j logger for class org.glite.data.common.helpers.StreamChomp */
-    private final static Logger m_log = Logger.getLogger("org.glite.data.common.helpers.StreamChomp");
+    /* Log4j logger for class */
+    private final static Logger m_log = Logger.getLogger(StreamChomp.class);
     private boolean m_isDone;
     private StringBuffer m_result;
     private InputStream m_stream;

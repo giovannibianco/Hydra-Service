@@ -23,8 +23,8 @@ import java.util.Properties;
  * There should only ever be one instance of this bean per application.
  */
 public class FileConfigurationBean implements ConfigurationBean {
-    /* Log4j logger for class org.glite.data.common.helpers.FileConfigurationBean */
-    private final static Logger m_log = Logger.getLogger("org.glite.data.common.helpers.FileConfigurationBean");
+    /* Log4j logger for class */
+    private final static Logger m_log = Logger.getLogger(FileConfigurationBean.class);
     private String m_configFilename;
     private boolean m_initialised;
     private Properties m_properties;

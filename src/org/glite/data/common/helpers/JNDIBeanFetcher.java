@@ -17,8 +17,8 @@ import javax.naming.NamingException;
  * Utility class to wrap JNDI bean fetch.
  */
 public class JNDIBeanFetcher {
-    /* Log4j logger for class org.glite.data.common.helpers.JNDIBeanFetcher */
-    private final static Logger m_log = Logger.getLogger("org.glite.data.common.helpers.JNDIBeanFetcher");
+    // Log4j logger for class
+    private final static Logger m_log = Logger.getLogger(JNDIBeanFetcher.class);
 
     public static Object fetchBean(String beanFactoryName)
         throws NamingException {

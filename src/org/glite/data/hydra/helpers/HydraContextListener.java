@@ -18,6 +18,7 @@ import javax.servlet.ServletContextListener;
  * This is the listener that loads the alternative log4j config file.
  */
 public class HydraContextListener implements ServletContextListener {
+    // Logger object
     private final static Logger m_log = Logger.getLogger(HydraContextListener.class);
 
     public void contextInitialized(ServletContextEvent event) {

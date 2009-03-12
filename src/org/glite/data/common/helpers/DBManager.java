@@ -26,7 +26,7 @@ import javax.sql.DataSource;
  */
 public class DBManager {
     /* Log4j logger for class  */
-    private final static Logger m_log = Logger.getLogger("org.glite.data.common.helpers.DBManager");
+    private final static Logger m_log = Logger.getLogger(DBManager.class);
     protected final String m_db_pool_name;
 
     // The datasource from which to fetch the connections
@@ -126,6 +126,8 @@ public class DBManager {
             m_log.error("Trying to create statement on closed connection from pool: " + m_db_pool_name);
             throw new DBException();
         }
+
+        m_log.debug("PrepareStatement SQL query: " + sqlQuery);
 
         PreparedStatement statement;
 
