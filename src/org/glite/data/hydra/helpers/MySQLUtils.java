@@ -7,23 +7,24 @@
 package org.glite.data.hydra.helpers;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
 public class MySQLUtils {
     // Logger object
-    private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.helpers.MySQLUtil");
+    private final static Logger m_log = Logger.getLogger(MySQLUtils.class);
+
+    private final static Pattern safeTableIdentifier_re =
+        Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]{0,63}");
 
 	public static boolean isValidTableIdentifier(String tableName) {
 		m_log.debug("Entered isValidTableIdentifier.");
 		
-		if((tableName.getBytes().length > 64) // check maximum size
-				|| (tableName.indexOf('\\') != -1) // check 
-				|| (tableName.indexOf('/') != -1)  // invalid
-				|| (tableName.indexOf('.') != -1)  // characters
-				) {
-			return false;
-		}		
+        // Check safe characters and the length
+        if (!safeTableIdentifier_re.matcher(tableName).matches()) {
+            return false;
+        }
 		
 		// Check for reserved words
 		if(Arrays.binarySearch(reservedWords, tableName.toUpperCase()) >= 0) {
@@ -33,13 +34,22 @@ public class MySQLUtils {
 		return true;
 	}
 	
+    private final static Pattern safeColumnIdentifier_re =
+        Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]{0,63}");
+
 	public static boolean isValidColumnIdentifier(String columnName) {
 		m_log.debug("Entered isValidColumnIdentifier.");
 		
-		 // check maximum size
-		if(columnName.getBytes().length > 64) {
+        // Check safe characters and the length
+        if (!safeColumnIdentifier_re.matcher(columnName).matches()) {
+            return false;
+        }
+
+		// Check for reserved words
+		if(Arrays.binarySearch(reservedWords, columnName.toUpperCase()) >= 0) {
 			return false;
 		}
+		
 		
 		return true;
 	}
@@ -49,7 +59,7 @@ public class MySQLUtils {
 			"ADD", "ALL", "ALTER", "ANALYZE", "AND", "AS", "ASC", "ASENSITIVE",
 			"BEFORE", "BETWEEN", "BIGINT", "BINARY", "BLOB", "BOTH", "BY",
 			"CALL", "CASCADE", "CASE", "CHANGE", "CHAR", "CHARACTER", "CHECK",
-			"COLLATE", "COLUMN", "CONDITION", "CONNECTION", "CONSTRAINT",
+			"COLLATE", "COLUMN", "COLUMNS", "CONDITION", "CONNECTION", "CONSTRAINT",
 			"CONTINUE", "CONVERT", "CREATE", "CROSS", "CURRENT_DATE", "CURRENT_TIME",
 			"CURRENT_TIMESTAMP", "CURRENT_USER", "CURSOR",
 			"DATABASE", "DATABASES", "DAY_HOUR", "DAY_MICROSECOND", "DAY_MINUTE",
@@ -57,29 +67,31 @@ public class MySQLUtils {
 			"DESC", "DESCRIBE", "DETERMINISTIC", "DISTINCT", "DISTINCTROW", "DIV",
 			"DOUBLE", "DROP", "DUAL",
 			"EACH", "ELSE", "ELSEIF", "ENCLOSED", "ESCAPED", "EXISTS", "EXIT", "EXPLAIN",
-			"FALSE", "FETCH", "FLOAT", "FOR", "FORCE", "FOREIGN", "FROM", "FULLTEXT",
+			"FALSE", "FETCH", "FIELDS", "FLOAT", "FLOAT4", "FLOAT8", "FOR", "FORCE",
+            "FOREIGN", "FROM", "FULLTEXT",
 			"GOTO", "GRANT", "GROUP",
 			"HAVING", "HIGH_PRIORITY", "HOUR_MICROSECOND", "HOUR_MINUTE", "HOUR_SECOND",
 			"IF", "IGNORE", "IN", "INDEX", "INFILE", "INNER", "INOUT", "INSENSITIVE",
-			"INSERT", "INT", "INTEGER", "INTERVAL", "INTO", "IS", "ITERATE",
+			"INSERT", "INT", "INT1", "INT2", "INT3", "INT4", "INT8", "INTEGER", "INTERVAL",
+            "INTO", "IS", "ITERATE",
 			"JOIN",
 			"KEY", "KEYS", "KILL",
-			"LEADING", "LEAVE", "LEFT", "LIKE", "LIMIT", "LINES", "LOAD", "LOCALTIME",
+			"LABEL", "LEADING", "LEAVE", "LEFT", "LIKE", "LIMIT", "LINES", "LOAD", "LOCALTIME",
 			"LOCALTIMESTAMP", "LOCK", "LONG", "LONGBLOB", "LONGTEXT", "LOOP", "LOW_PRIORITY",
 			"MATCH", "MEDIUMBLOB", "MEDIUMINT", "MEDIUMTEXT", "MIDDLEINT", 
 			"MINUTE_MICROSECOND", "MINUTE_SECOND", "MOD", "MODIFIES",
 			"NATURAL", "NOT", "NO_WRITE_TO_BINLOG", "NULL", "NUMERIC",
 			"ON", "OPTIMIZE", "OPTION", "OPTIONALLY", "OR", "ORDER", "OUT", "OUTER", "OUTFILE",
-			"PRECISION", "PRIMARY", "PROCEDURE", "PURGE",
-			"READ", "READS", "REAL", "REFERENCES", "REGEXP", "RENAME", "REPEAT", "REPLACE",
-			"REQUIRE", "RESTRICT", "RETURN", "REVOKE", "RIGHT", "RLIKE",
+			"PRECISION", "PRIMARY", "PRIVILEGES", "PROCEDURE", "PURGE",
+			"READ", "READS", "REAL", "REFERENCES", "REGEXP", "RELEASE", "RENAME", "REPEAT",
+            "REPLACE", "REQUIRE", "RESTRICT", "RETURN", "REVOKE", "RIGHT", "RLIKE",
 			"SCHEMA", "SCHEMAS", "SECOND_MICROSECOND", "SELECT", "SENSITIVE", "SEPARATOR",
 			"SET", "SHOW", "SMALLINT", "SONAME", "SPATIAL", "SPECIFIC", "SQL", "SQLEXCEPTION",
 			"SQLSTATE", "SQLWARNING", "SQL_BIG_RESULT", "SQL_CALC_FOUND_ROWS", 
 			"SQL_SMALL_RESULT", "SSL", "STARTING", "STRAIGHT_JOIN",
-			"TABLE", "TERMINATED", "THEN", "TINYBLOB", "TINYINT", "TINYTEXT", "TO",
+			"TABLE", "TABLES", "TERMINATED", "THEN", "TINYBLOB", "TINYINT", "TINYTEXT", "TO",
 			"TRAILING", "TRIGGER", "TRUE",
-			"UNDO", "UNION", "UNIQUE", "UNLOCK", "UNSIGNED", "UPDATE", "USAGE",
+			"UNDO", "UNION", "UNIQUE", "UNLOCK", "UNSIGNED", "UPDATE", "UPGRADE", "USAGE",
 			"USE", "USING", "UTC_DATE", "UTC_TIME", "UTC_TIMESTAMP",
 			"VALUES", "VARBINARY", "VARCHAR", "VARCHARACTER", "VARYING",
 			"WHEN", "WHERE", "WHILE", "WITH", "WRITE",
