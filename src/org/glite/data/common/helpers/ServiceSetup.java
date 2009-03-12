@@ -25,11 +25,6 @@ public class ServiceSetup {
         try {
             // Initialize the base interface implementation
             Class.forName("org.glite.data.common.helpers.ServiceImpl");
-
-            // TODO:
-            // initialize the DB connection pool -- implicit?
-            // optionally upgrade/fix the database
-            // start independent maintenance daemons
         } catch (ClassNotFoundException e) {
             log.fatal("*** FATAL DEPLOYMENT PROBLEM *** an essential class was not found:" + e.toString());
         }
@@ -41,10 +36,6 @@ public class ServiceSetup {
      * Stops background threads, cleans up Java environment.
      */
     public static void stop() {
-        // TODO:
-        // wait for pending transactions
-        // close the connections in the DB connection pool
-        // stop independent maintenance daemons
         log.info("The org.glite.data service is stopped");
     }
 }
