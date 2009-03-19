@@ -22,6 +22,7 @@ import java.util.Properties;
  * @author <a href="mailto:Akos.Frohner">Akos Frohner</a>
  */
 public class ServiceImpl {
+    // Log4j logger for class
     static private Logger m_log = Logger.getLogger(ServiceImpl.class);
 
     /**
@@ -32,10 +33,10 @@ public class ServiceImpl {
     /**
      * The singleton object.
      */
-    static protected Properties props = null;
+    static private Properties props = null;
 
     static {
-        InitProperties();
+        initProperties();
 
         // Sanity check: see if the module version is known
         if (getProperty("VERSION") == null) {
@@ -44,10 +45,10 @@ public class ServiceImpl {
     }
 
     protected ServiceImpl() {
-        InitProperties();
+        initProperties();
     }
 
-    static protected void InitProperties() {
+    static protected void initProperties() {
         // return if the singleton is already initialized
         if (props != null) {
             return;
@@ -56,9 +57,8 @@ public class ServiceImpl {
         // singleton initialization
         props = new Properties();
 
+        InputStream inp = null;
         try {
-            InputStream inp = null;
-
             ClassLoader loader = ServiceImpl.class.getClassLoader();
 
             if (loader != null) {
@@ -68,11 +68,15 @@ public class ServiceImpl {
             }
 
             props.load(new BufferedInputStream(inp));
-            inp.close();
 
             m_log.info("Configuration file '" + VERSION_PROPERTIES_FILE + "' loaded");
         } catch (IOException e) {
             m_log.error("Error loading config file " + VERSION_PROPERTIES_FILE + ": " + e);
+        } finally {
+            try {
+                inp.close();
+            } catch (Exception e) {
+            }
         }
     }
 
