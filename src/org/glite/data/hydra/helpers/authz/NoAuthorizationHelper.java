@@ -26,7 +26,6 @@ public class NoAuthorizationHelper extends AuthorizationHelper {
      */
     public void setPermission(PermissionEntry[] permissions)
         throws InvalidArgumentException, InternalException {
-        // TODO Auto-generated method stub
     }
 
     /* (non-Javadoc)
@@ -34,7 +33,6 @@ public class NoAuthorizationHelper extends AuthorizationHelper {
      */
     public PermissionEntry[] getPermission(String[] items)
         throws AuthorizationException, InternalException {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -42,7 +40,13 @@ public class NoAuthorizationHelper extends AuthorizationHelper {
 	 * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#checkPermission(java.lang.String[], org.glite.data.catalog.service.Perm)
 	 */
 	public void checkPermission(String[] entries, Perm patternPerm) throws AuthorizationException, NotExistsException, InternalException {
-		// TODO Auto-generated method stub
-		
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#checkSchemaPermission(java.lang.String[], org.glite.data.catalog.service.Perm)
+	 */
+	public void checkSchemaPermission(String[] entries, Perm patternPerm) throws AuthorizationException, NotExistsException, InternalException {
+
 	}
 }
