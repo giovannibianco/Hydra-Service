@@ -22,11 +22,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 
 public class MySQLCatalogHelper extends CatalogHelper {
     // Logger object
-    private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.mysql.MySQLCatalogHelper");
+    private final static Logger m_log = Logger.getLogger(MySQLCatalogHelper.class);
 
     /**
      * @param dbManager
@@ -58,6 +59,9 @@ public class MySQLCatalogHelper extends CatalogHelper {
         PreparedStatement p_stat_principal = null;
         PreparedStatement p_stat_group = null;
 
+        // Prepare the SQL string for principals
+        String sqlPrincipal = "INSERT IGNORE INTO t_principal (principal_name) VALUES (?)";
+
         // Prepare the SQL string for the entry
         String sqlEntry = "INSERT INTO t_entry (entry_name, owner_id, group_id," +
             " user_perm, group_perm, other_perm, schema_id, creation_time) " +
@@ -65,17 +69,14 @@ public class MySQLCatalogHelper extends CatalogHelper {
             " FROM t_principal P1, t_principal P2, t_schema S" +
             " WHERE P1.principal_name = ? AND P2.principal_name = ? AND S.schema_name = ?";
 
-        // Prepare the SQL string for principals
-        String sqlPrincipal = "INSERT IGNORE INTO t_principal (principal_name) VALUES (?)";
-
         // Prepare shared objects
         Timestamp creationTime = new Timestamp(System.currentTimeMillis());
 
         try {
             // Add all entries
             conn = m_dbmanager.getConnection(false);
-            p_stat_entry = m_dbmanager.prepareStatement(conn, sqlEntry);
             p_stat_principal = m_dbmanager.prepareStatement(conn, sqlPrincipal);
+            p_stat_entry = m_dbmanager.prepareStatement(conn, sqlEntry);
 
             for (int i = 0; i < entries.length; i++) {
                 String entry = entries[i].getString1();
@@ -168,13 +169,8 @@ public class MySQLCatalogHelper extends CatalogHelper {
         ResultSet rs = null;
 
         // Internal objects
-        String pattern = "%s"; // default is to retrieve all entries
+        String pattern = (entryPattern != null ? entryPattern : "%s"); // defaults to all entries
         ArrayList entries = new ArrayList();
-
-        // Update pattern when one was provided
-        if (entryPattern != null) {
-            pattern = entryPattern;
-        }
 
         // Prepare the SQL string
         String sql = "SELECT entry_name FROM t_entry WHERE entry_name LIKE ?";
@@ -204,13 +200,17 @@ public class MySQLCatalogHelper extends CatalogHelper {
         return (String[]) entries.toArray(new String[] {  });
     }
 
+    private final static Pattern safeEntry_re = Pattern.compile("[a-zA-Z0-9_\\-\\:\\#\\/\\=\\.\\+]+");
+
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.CatalogHelper#checkEntryValidity(java.lang.String)
      */
     public void checkEntryValidity(String entry) throws InvalidArgumentException, InternalException {
         m_log.debug("Entered checkEntryValidity.");
 
-        //TODO: implement
+        if (!safeEntry_re.matcher(entry).matches()) {
+            throw new IllegalArgumentException("Invalid Enrtry String: " + entry);
+        }
     }
     
     /* (non-Javadoc)
