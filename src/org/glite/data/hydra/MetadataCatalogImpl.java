@@ -38,7 +38,7 @@ import javax.naming.NamingException;
  */
 public class MetadataCatalogImpl {
     // Logger object
-    private final static Logger m_log = Logger.getLogger("org.glite.data.catalog.service.meta.MetadataCatalogImpl");
+    private final static Logger m_log = Logger.getLogger(MetadataCatalogImpl.class);
     private static final String m_dbpool = "jdbc/hydra";
 
     // DB interaction objects
@@ -171,7 +171,6 @@ public class MetadataCatalogImpl {
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#createEntry(java.lang.String[], java.lang.String[])
-     * TODO: remove the internal stuff
      */
     public void createEntry(StringPair[] entries)
         throws InvalidArgumentException, InternalException, ExistsException, NotExistsException, AuthorizationException {
@@ -179,10 +178,6 @@ public class MetadataCatalogImpl {
 
         Perm writePerm = GliteUtils.convertIntToPerm(8);
            
-        // Internal objects
-        int[] schemaIds = new int[entries.length];
-        String[] entryNames = new String[entries.length];
-
         // Check if given parameters are valid
         for (int i = 0; i < entries.length; i++) {
             String entry = entries[i].getString1();
@@ -212,18 +207,12 @@ public class MetadataCatalogImpl {
                 m_log.error("Schema not found in the catalog: " + schemaName);
                 throw new NotExistsException("Schema not found in the catalog: " + schemaName);
             }
-
-            // Fill internal objects
-            //entryNames[i] = entry;
-            //schemaIds[i] = schemaId;
-            //m_log.debug("entryName: " + entry + "; schemaId: " + schemaId);
         }
 
         // Get default BasicPermission for client
         BasicPermission defaultPermission = m_authz_helper.getDefaultBasicPermission();
 
         // Add the new entries
-        //m_cat_helper.addEntries(entryNames, schemaIds, defaultPermission);
         m_cat_helper.addEntries(entries, defaultPermission);
     }
 
@@ -244,145 +233,57 @@ public class MetadataCatalogImpl {
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#createSchema(java.lang.String, org.glite.data.catalog.service.meta.Attribute[])
      */
-    public void createSchema(String schemaName, Attribute[] attributes)
-        throws AuthorizationException, ExistsException, InvalidArgumentException, InternalException {
-        m_log.debug("Entered createSchema.");
-
-        // Check if client is allowed to create a new schema
-        // TODO: implement
-        // Check if given parameters (schema name, attribute name and type) are valid
-        m_schema_helper.checkSchemaNameValidity(schemaName);
-        m_schema_helper.checkAttributesValidity(attributes);
-
-        // Check if schema exists
-        String[] schemas = m_schema_helper.getSchemas(schemaName);
-
-        if (schemas.length != 0) {
-            m_log.error("There is already one schema with the given name: '" + schemaName + "'");
-            throw new ExistsException("There is already one schema with the given name: '" + schemaName + "'");
-        }
-
-        // Add the new schema
-        m_schema_helper.addSchema(schemaName, attributes);
+    public void createSchema(String schemaName, Attribute[] attributes) throws InternalException {
+        m_log.debug("createSchema not implemented in Hydra Service.");
+        throw new InternalException("createSchema not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#addSchemaAttributes(java.lang.String, org.glite.data.catalog.service.meta.Attribute[])
      */
-    public void addSchemaAttributes(String schemaName, Attribute[] attributes)
-        throws AuthorizationException, NotExistsException, ExistsException, InvalidArgumentException, InternalException {
-        m_log.debug("Entered addSchemaAttributes.");
-
-        // Check if client is allowed to change the schema
-        //TODO: implement
-        // Check if schema exists
-        String[] schemas = m_schema_helper.getSchemas(schemaName);
-
-        if (schemas.length == 0) {
-            m_log.error("There is no schema with the given name: '" + schemaName + "'");
-            throw new NotExistsException("There is no schema with the given name: '" + schemaName + "'");
-        }
-
-        // Check if attributes are valid
-        m_schema_helper.checkAttributesValidity(attributes);
-
-        // Add the new attributes to the schema
-        m_schema_helper.addSchemaAttributes(schemaName, attributes);
+    public void addSchemaAttributes(String schemaName, Attribute[] attributes) throws InternalException {
+        m_log.debug("addSchemaAttributes not implemented in Hydra Service.");
+        throw new InternalException("addSchemaAttributes not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#removeSchemaAttributes(java.lang.String, java.lang.String[])
      */
-    public void removeSchemaAttributes(String schemaName, String[] attributeNames)
-        throws AuthorizationException, NotExistsException, InternalException {
-        m_log.debug("Entered removeSchemaAttributes.");
-
-        // Check if client is allowed to change the schema
-        //TODO: implement
-        // Check if schema exists
-        String[] schemas = m_schema_helper.getSchemas(schemaName);
-
-        if (schemas.length == 0) {
-            m_log.error("There is no schema with the given name: '" + schemaName + "'");
-            throw new NotExistsException("There is no schema with the given name: '" + schemaName + "'");
-        }
-
-        // Remove the attributes from the schema
-        m_schema_helper.removeSchemaAttributes(schemaName, attributeNames);
+    public void removeSchemaAttributes(String schemaName, String[] attributeNames) throws InternalException {
+        m_log.debug("removeSchemaAttributes not implemented in Hydra Service.");
+        throw new InternalException("removeSchemaAttributes not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#deleteSchema(java.lang.String)
      */
-    public void dropSchema(String schemaName) throws AuthorizationException, NotExistsException, InternalException {
-        m_log.debug("Entered dropSchema.");
-
-        // Check if client can remove the schema
-        //TODO: implement
-        // Check if schema exists
-        String[] schemas = m_schema_helper.getSchemas(schemaName);
-
-        if (schemas.length == 0) {
-            m_log.error("There is no schema with the given name: '" + schemaName + "'");
-            throw new NotExistsException("There is no with the given name: '" + schemaName + "'");
-        }
-
-        // Remove the schema
-        m_schema_helper.removeSchema(schemaName);
+    public void dropSchema(String schemaName) throws InternalException {
+        m_log.debug("dropSchema not implemented in Hydra Service.");
+        throw new InternalException("dropSchema not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#listSchemas()
      */
-    public String[] listSchemas() throws AuthorizationException, InternalException {
-        m_log.debug("Entered listSchemas.");
-
-        // Check if the client can list the schemas
-        //TODO: implement
-        // Get the schemas list and return
-        return m_schema_helper.getSchemas(null);
+    public String[] listSchemas() throws InternalException {
+        m_log.debug("listSchemas not implemented in Hydra Service.");
+        throw new InternalException("listSchemas not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#describeSchema(java.lang.String)
      */
-    public Attribute[] describeSchema(String schemaName)
-        throws AuthorizationException, NotExistsException, InternalException {
-        m_log.debug("Entered describeSchema.");
-
-        // Check if the client can get the schema description
-        //TODO: implement
-        // Check if schema exists
-        String[] schemas = m_schema_helper.getSchemas(schemaName);
-
-        if (schemas.length == 0) {
-            m_log.error("There is no schema with the given name: '" + schemaName + "'");
-            throw new NotExistsException("There is no with the given name: '" + schemaName + "'");
-        }
-
-        // Get the schema description and return
-        return m_schema_helper.getSchemaDescription(schemaName);
+    public Attribute[] describeSchema(String schemaName) throws InternalException {
+        m_log.debug("describeSchema not implemented in Hydra Service.");
+        throw new InternalException("describeSchema not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.MetadataCatalog#query(java.lang.String[], java.lang.String)
      */
-    public String[] query(String query, String type, int limit, int offset)
-        throws InternalException, AuthorizationException, InvalidArgumentException {
-        
-        // Check for query type validity
-        // TODO: implement
-
-        // Check for query validity
-        // TODO: implement
-        
-        // Check for limit/offset validity
-        if((limit >= 0 && offset < 0) || (limit < 0 && offset >=0)) {
-            throw new InvalidArgumentException("Invalid offset/limit pair given. Either give both or none.");
-        }
-
-        // Make the query
-        return m_attr_helper.query(query, type, limit, offset);
+    public String[] query(String query, String type, int limit, int offset) throws InternalException {
+        m_log.debug("query not implemented in Hydra Service.");
+        throw new InternalException("query not implemented in Hydra Service.");
     }
 
     /* (non-Javadoc)
