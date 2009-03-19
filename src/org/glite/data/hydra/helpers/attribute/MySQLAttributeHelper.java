@@ -13,13 +13,16 @@ import org.glite.data.catalog.service.InternalException;
 import org.glite.data.catalog.service.NotExistsException;
 import org.glite.data.catalog.service.StringPair;
 import org.glite.data.common.helpers.DBManager;
+import org.glite.data.common.helpers.DBException;
 import org.glite.data.hydra.helpers.AttributeHelper;
 import org.glite.data.hydra.helpers.authz.MySQLAuthorizationHelper;
+import org.glite.data.hydra.helpers.MySQLUtils;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +30,7 @@ import java.util.List;
 
 public class MySQLAttributeHelper extends AttributeHelper {
     // Logger object
-    private final static Logger m_log = Logger.getLogger(
-            "org.glite.data.catalog.service.meta.mysql.MySQLAttributeHelper");
+    private final static Logger m_log = Logger.getLogger(MySQLAttributeHelper.class);
 
     /**
      * @param dbManager
@@ -63,19 +65,22 @@ public class MySQLAttributeHelper extends AttributeHelper {
         schemaName = entryAndSchema.getString2();
 
         // Prepare SQL string
-        String sql = null;
+        String filter = "";
 
         if (attributeNames != null) {
-            sql = getAttributesSQLString(entryID, schemaName, attributeNames);
+            for (int i = 0; i < attributeNames.length; i++) {
+                filter += (i==0 ? "" : ", ") + validateColumnName(attributeNames[i]);
+            }
         } else {
-            sql = getAllAttributesSQLString(entryID, schemaName);
+            filter = "*";
         }
 
-        m_log.debug("SQL String: " + sql);
+        String sql = "SELECT " + filter + " FROM " + validateSchemaName(schemaName) + " WHERE entry_id = ?";
 
         try {
             conn = m_dbmanager.getConnection(true);
             p_stat = m_dbmanager.prepareStatement(conn, sql);
+            p_stat.setInt(1, entryID);
 
             // Execute query
             rs = p_stat.executeQuery();
@@ -144,18 +149,14 @@ public class MySQLAttributeHelper extends AttributeHelper {
             conn = m_dbmanager.getConnection(false);
 
             // Try to update existing record
-            String sqlUpdate = getSetAttributesSQLUpdateString(schemaName, entryID, attributes);
-            m_log.debug("SQL Update String: " + sqlUpdate);
-            p_stat = m_dbmanager.prepareStatement(conn, sqlUpdate);
-
+            p_stat = getSetAttributesSQLUpdateStatement(conn, schemaName, entryID, attributes);
             int updateResult = p_stat.executeUpdate();
+
             m_log.debug("Update returned: " + updateResult);
 
             // Create a new record in the table if one was not there
             if (updateResult == 0) {
-                String sqlInsert = getSetAttributesSQLInsertString(schemaName, entryID, attributes);
-                m_log.debug("SQL Insert String: " + sqlInsert);
-                p_stat = m_dbmanager.prepareStatement(conn, sqlInsert);
+                p_stat = getSetAttributesSQLInsertStatement(conn, schemaName, entryID, attributes);
                 p_stat.executeUpdate();
             }
 
@@ -206,11 +207,9 @@ public class MySQLAttributeHelper extends AttributeHelper {
             conn = m_dbmanager.getConnection(false);
 
             // Try to update existing record
-            String sqlUpdate = getSetAttributesSQLUpdateString(schemaName, entryID, attributes);
-            m_log.debug("SQL Update String: " + sqlUpdate);
-            p_stat = m_dbmanager.prepareStatement(conn, sqlUpdate);
-
+            p_stat = getSetAttributesSQLUpdateStatement(conn, schemaName, entryID, attributes);
             int updateResult = p_stat.executeUpdate();
+
             m_log.debug("Update returned: " + updateResult);
 
             // Commit changes
@@ -223,80 +222,6 @@ public class MySQLAttributeHelper extends AttributeHelper {
             m_dbmanager.cleanupResources(p_stat);
             m_dbmanager.cleanupResources(conn);
         }
-    }
-
-    public String[] query(String query, String type, int limit, int offset)
-        throws InternalException {
-        m_log.debug("Entered query.");
-
-        // Database Objects
-        Connection conn = null;
-        PreparedStatement p_stat = null;
-        ResultSet rs = null;
-
-        // Internal objects
-        ArrayList entries = new ArrayList();
-
-        // Make the query
-        try {
-            conn = m_dbmanager.getConnection(false);
-
-            // Process the user VOMS attributes
-            List attrs = MySQLAuthorizationHelper.getAuthzAttributeList();
-            String attrsString = null;
-            if(attrs != null) {
-                if(attrs.size() > 0) {
-                    attrsString = "'" + attrs.get(0) + "'";
-                    for(int i=1; i < attrs.size(); i++) {
-                        attrsString += ",'" + attrs.get(i) + "'";
-                    }
-                }
-            }
-
-            String sql = "SELECT entry_name "
-                + "FROM t_entry T "
-                + "LEFT JOIN t_schema S ON S.schema_id = T.schema_id "
-                + "LEFT JOIN t_principal UP ON UP.principal_id = T.owner_id "
-                + "LEFT JOIN t_principal GP ON GP.principal_id = T.group_id "
-                + "WHERE S.schema_name = '" + query + "' "
-                + "  AND ( "
-                + "    ((T.other_perm & 4) = 4) "
-                + "    OR "
-                + "    (UP.principal_name = '" + MySQLAuthorizationHelper.getClientName() + "' AND (T.user_perm & 4) = 4) ";
-            // Add group permissions if VOMS attributes were exposed
-            if(attrsString != null) {
-                sql += " OR (GP.principal_name IN ('default-group') AND (T.group_perm & 4) = 4) ";
-            }
-            // Wrap up
-            sql += ") ORDER BY creation_time DESC ";
-            // Add limits if given
-            if(limit != -1) {
-                sql+= " LIMIT " + offset + ", " + limit;
-            }
-            m_log.debug("SQL:" + sql);
-
-            p_stat = m_dbmanager.prepareStatement(conn, sql);
-
-            // Execute query
-            rs = p_stat.executeQuery();
-
-            // Parse results
-            while(rs.next()) {
-                entries.add(rs.getString("entry_name"));
-            }
-            m_log.debug("Returning " + entries.size() + " entries.");
-        } catch (Exception sqle) {
-            m_log.debug("Failed to execute query. Exception was: " + sqle);
-            m_dbmanager.rollbackRegardless(conn);			
-            throw new InternalException("Failed to execute query on database.");
-        } finally {
-            m_dbmanager.cleanupResources(p_stat);
-            m_dbmanager.cleanupResources(conn);
-            m_dbmanager.cleanupResources(rs);
-        }
-
-        // Return the results
-        return (String[])entries.toArray(new String[] {});
     }
 
     private StringPair getEntryInfo(String entry) throws NotExistsException {
@@ -338,76 +263,77 @@ public class MySQLAttributeHelper extends AttributeHelper {
         return entryAndSchema;
     }
 
-    private String getSetAttributesSQLUpdateString(String schemaName, int entryID, Attribute[] attributes) {
-        // Init string
-        String sqlUpdate = "UPDATE " + schemaName + " SET ";
+    private PreparedStatement getSetAttributesSQLUpdateStatement(Connection conn, String schemaName, int entryID, Attribute[] attributes)
+        throws DBException, SQLException {
 
-        // Parse attributes and set strings
-        for (int i = 0; i < (attributes.length - 1); i++) {
-            sqlUpdate += (attributes[i].getName() + " = '" + attributes[i].getValue() + "', ");
-        }
+        PreparedStatement p_stat;
 
-        sqlUpdate += (attributes[attributes.length - 1].getName() + " = '" +
-        attributes[attributes.length - 1].getValue() + "'" + " WHERE entry_id = " + entryID);
+        /* create the sql command */
 
-        // Return
-        return sqlUpdate;
-    }
-
-    private String getSetAttributesSQLInsertString(String schemaName, int entryID, Attribute[] attributes) {
-        // Init partial strings
-        String sqlInsert = "INSERT INTO " + schemaName;
-        String sqlInsertFields = " (";
-        String sqlInsertValues = " VALUES (";
-
-        // Parse attributes and set strings
+        String settings = "";
         for (int i = 0; i < attributes.length; i++) {
-            sqlInsertFields += (attributes[i].getName() + ", ");
-            sqlInsertValues += ("'" + attributes[i].getValue() + "', ");
+            settings += (i==0 ? "" : ", ") + validateColumnName(attributes[i].getName()) + " = ?";
         }
 
-        sqlInsertFields += "entry_id)";
-        sqlInsertValues += (entryID + ")");
+        String sql = "UPDATE " + validateSchemaName(schemaName) + " SET " + 
+            settings + " WHERE entry_id = ?";
 
-        // Wrap up and return
-        return sqlInsert + sqlInsertFields + sqlInsertValues;
+        /* prepare and fill the statement */
+
+        p_stat = m_dbmanager.prepareStatement(conn, sql);
+
+        int a = 1;
+        for (int i = 0; i < attributes.length; i++) {
+            p_stat.setString(a++, attributes[i].getValue());
+        }
+        p_stat.setInt(a++, entryID);
+
+        return p_stat;
     }
 
-    private String getSetAttributesSQLUniqueString(String schemaName, int entryID, Attribute[] attributes) {
-        String sqlUpdate = "INSERT INTO " + schemaName;
-        String sqlUpdateFields = " (";
-        String sqlUpdateValues = " VALUES (";
-        String sqlUpdateDuplicates = " ON DUPLICATE KEY UPDATE ";
+    private PreparedStatement getSetAttributesSQLInsertStatement(Connection conn, String schemaName, int entryID, Attribute[] attributes)
+        throws DBException, SQLException {
+        
+        PreparedStatement p_stat;
 
-        for (int i = 0; i < (attributes.length - 1); i++) {
-            sqlUpdateFields += (attributes[i].getName() + ", ");
-            sqlUpdateValues += ("'" + attributes[i].getValue() + "', ");
-            sqlUpdateDuplicates += (attributes[i].getName() + " = '" + attributes[i].getValue() + "', ");
+        /* create the sql command */
+
+        String columns = "";
+        String values = "";
+
+        for (int i = 0; i < attributes.length; i++) {
+            columns += (i==0 ? "" : ", ") + validateColumnName(attributes[i].getName());
+            values += (i==0 ? "?" : ", ?");
         }
 
-        sqlUpdateFields += (attributes[attributes.length - 1].getName() + ")");
-        sqlUpdateValues += ("'" + attributes[attributes.length - 1].getValue() + "')");
-        sqlUpdateDuplicates += (attributes[attributes.length - 1].getName() + " = '" +
-        attributes[attributes.length - 1].getValue() + "'" + " WHERE entry_id = " + entryID);
+        String sql = "INSERT INTO " + validateSchemaName(schemaName) +
+            " (" + columns  + ", entry_id) VALUES (" + values + ", ?)";
 
-        // Wrap up 
-        return sqlUpdate + sqlUpdateFields + sqlUpdateValues + sqlUpdateDuplicates;
-    }
+        /* prepare and fill the statement */
 
-    private String getAttributesSQLString(int entryID, String schemaName, String[] attributeNames) {
-        String sql = "SELECT ";
+        p_stat = m_dbmanager.prepareStatement(conn, sql);
 
-        for (int i = 0; i < (attributeNames.length - 1); i++) {
-            sql += (attributeNames[i] + ", ");
+        int a = 1;
+        for (int i = 0; i < attributes.length; i++) {
+            p_stat.setString(a++, attributes[i].getValue());
         }
+        p_stat.setInt(a++, entryID);
 
-        sql += (attributeNames[attributeNames.length - 1] + " FROM " + schemaName + " WHERE entry_id = " + entryID);
-
-        return sql;
+        return p_stat;
     }
 
-    private String getAllAttributesSQLString(int entryID, String schemaName) {
-        return "SELECT * FROM " + schemaName + " WHERE entry_id = " + entryID;
+    private String validateColumnName(final String s) throws IllegalArgumentException {
+        if (!MySQLUtils.isValidColumnIdentifier(s)) {
+            throw new IllegalArgumentException("Invalid Column Name: " + s);
+        }
+        return s;
+    }
+
+    private String validateSchemaName(final String s) throws IllegalArgumentException {
+        if (!MySQLUtils.isValidTableIdentifier(s)) {
+            throw new IllegalArgumentException("Invalid Schema Name: " + s);
+        }
+        return s;
     }
 
 }

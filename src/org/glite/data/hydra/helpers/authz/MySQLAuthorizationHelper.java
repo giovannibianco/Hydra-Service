@@ -43,8 +43,7 @@ import javax.naming.NamingException;
 
 public class MySQLAuthorizationHelper extends AuthorizationHelper {
     // Logger object
-    private final static Logger m_log = Logger.getLogger(
-            "org.glite.data.catalog.service.meta.helpers.MySQLAuthorizationHelper");
+    private final static Logger m_log = Logger.getLogger(MySQLAuthorizationHelper.class);
 
     public static final String DEFAULT_CLIENT_DN = "default-dn";
     public static final String DEFAULT_GROUP_NAME = "default-group";
@@ -53,17 +52,17 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
     public static final int DEFAULT_OTHER_PERM = 0;
         
     // Default client dn objects
-    public static String defaultClientDN = null;
-    public static String defaultGroupName = null;
+    private static String defaultClientDN = DEFAULT_CLIENT_DN;
+    private static String defaultGroupName = DEFAULT_GROUP_NAME;
 
     // Default Permissions objects
-    public static Perm defaultUserPerm = null;
-    public static Perm defaultGroupPerm = null;
-    public static Perm defaultOtherPerm = null;
+    private Perm defaultUserPerm = null;
+    private Perm defaultGroupPerm = null;
+    private Perm defaultOtherPerm = null;
     
     // Service level authorization attributes
-    public static String createVomsAttribute = null;
-    public static String adminVomsAttribute  = null;
+    private String createVomsAttribute = null;
+    private String adminVomsAttribute  = null;
 
     /**
     * @param dbManager
@@ -107,16 +106,12 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         String defaultDN = config.get("default_dn");
         if(defaultDN != null) {
             defaultClientDN = defaultDN;
-        } else {
-            defaultClientDN = DEFAULT_CLIENT_DN;
         }
 
         // Set default group name
         String defaultGroup = config.get("default_group");
         if(defaultGroup != null) {
             defaultGroupName = defaultGroup;
-        } else {
-            defaultGroupName = DEFAULT_GROUP_NAME;
         }
 
         // Set create attribute
@@ -150,7 +145,6 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
     /* (non-Javadoc)
      * @see org.glite.data.catalog.service.meta.helpers.AuthorizationHelper#setPermission(org.glite.data.catalog.service.PermissionEntry[])
-     * TODO: check for duplicate entries in the acl (get error from mysql)
      */
     public void setPermission(PermissionEntry[] permissions)
         throws InvalidArgumentException, InternalException {
@@ -375,13 +369,12 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             " WHERE E.entry_name = ? AND P1.principal_id = E.owner_id AND P2.principal_id = E.group_id";
 
         // Prepare the ACL sql string
-        String principalListString = "(";
-        for(int i=0; i < principalList.size()-1; i++) {
-        	principalListString += "'" + principalList.get(i) + "', ";
+        String principalListString = "";
+        for(int i=0; i < principalList.size(); i++) {
+        	principalListString += (i==0 ? "?" : ", ?");
         }
-        principalListString += "'" + principalList.get(principalList.size()-1) + "')";
         String sqlACL = "SELECT A.perm FROM t_acl A, t_entry E, t_principal P" +
-            " WHERE E.entry_name = ? AND P.principal_name IN " + principalListString +
+            " WHERE E.entry_name = ? AND P.principal_name IN (" + principalListString + ")" +
 			" AND E.entry_id = A.entry_id AND P.principal_id = A.principal_id";
 
         // Check permissions
@@ -391,9 +384,9 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             p_stat_acl = m_dbmanager.prepareStatement(conn, sqlACL);
 
             // Iterate through entries
-            for (int i = 0; i < entries.length; i++) {
+            for (int e = 0; e < entries.length; e++) {
                 // Get the basic permissions for the entry
-                p_stat_basic_perm.setString(1, entries[i]);
+                p_stat_basic_perm.setString(1, entries[e]);
                 rsbp = p_stat_basic_perm.executeQuery();
 
                 if (!rsbp.next()) {
@@ -426,7 +419,11 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
 
                 m_log.debug("checking acl...");
                 // Now go check the ACL (the principal list contains the client dn plus all the voms attributes)
-               	p_stat_acl.setString(1, entries[i]);
+                int a = 1;
+               	p_stat_acl.setString(a++, entries[e]);
+                for(int i = 0; i < principalList.size(); i++) {
+                    p_stat_acl.setString(a++, principalList.get(i).toString());
+                }
                	rsAcl = p_stat_acl.executeQuery();
                 	
                	while(rsAcl.next()) {
@@ -438,8 +435,8 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
                	}
                 m_log.debug("unauthorized...");
                 // If we got here no permission should be granted
-                m_log.debug("Cannot perform action for entry '" + entries[i] + "'.");
-                throw new AuthorizationException("Cannot perform action for entry '" + entries[i] + "'.");
+                m_log.debug("Cannot perform action for entry '" + entries[e] + "'.");
+                throw new AuthorizationException("Cannot perform action for entry '" + entries[e] + "'.");
             }
         } catch (SQLException sqle) {
             m_log.error("Error getting permissions of entries. Exception was: " + sqle);
@@ -471,7 +468,6 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
             return;
         }
 
-        // TODO: implement these tests as permissions on schema objects
         if(patternPerm.isWrite()) {
             if((createVomsAttribute != null) && (!principalList.contains(createVomsAttribute))) {
                 m_log.debug("client is not allowed to create a new entry in " + schema);
@@ -577,7 +573,6 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
     }
 
     private static boolean checkPermPattern(Perm pattern, Perm perm) {
-        //TODO: find a more clever way
         if (pattern.isPermission() && !perm.isPermission()) {
             return false;
         }
