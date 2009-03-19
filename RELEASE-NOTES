@@ -1,3 +1,11 @@
+*** Release glite-data-hydra-service_R_1_3_5_1 2009-03-19
+
+	o Fixed SQL vulnerabilities.
+	o Removed unused methods (xxxSchema).
+	o Implemented several checks.
+	o Generalized logger class name.
+	o Hardened and cleaned code.
+
 *** Release glite-data-hydra-service_R_1_3_4_1 2009-01-20
 
 	o Fixed #43945: warning during the version query is redirected to /dev/null.
