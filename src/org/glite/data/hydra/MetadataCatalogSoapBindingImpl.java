@@ -27,8 +27,7 @@ import org.glite.data.common.helpers.ServiceImpl;
  */
 public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements MetadataCatalog {
     // Logger object
-    private final static Logger m_log = Logger.getLogger(
-            "org.glite.data.catalog.service.meta.MetadataCatalogSoapBindingImpl");
+    private final static Logger m_log = Logger.getLogger(MetadataCatalogSoapBindingImpl.class);
 
     // The Metadata Catalog implementation object
     private MetadataCatalogImpl m_catalog = null;
@@ -95,7 +94,7 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
      * @see org.glite.data.catalog.service.meta.MetadataBase#listAttributes(java.lang.String)
      */
     public Attribute[] listAttributes(String item) throws AuthorizationException, NotExistsException, InternalException {
-        // TODO Auto-generated method stub
+        // intentionally empty
         return m_catalog.listAttributes(item);
     }
 
@@ -128,7 +127,7 @@ public class MetadataCatalogSoapBindingImpl extends ServiceImpl implements Metad
      */
     public void checkPermission(String[] items, Perm perm)
         throws AuthorizationException {
-        // TODO Auto-generated method stub
+        // intentionally empty
     }
 
     /* (non-Javadoc)
