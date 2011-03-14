@@ -97,8 +97,8 @@ trustmanager.location =${trustmanager.location}
         <fileset dir="${util-java.location}/share/java">
             <include name="glite-security-util-java.jar"/>
         </fileset>
-        <fileset dir="${bcprov.location}/jars">
-	    <include name="bcprov-jdk14-122.jar"/>
+        <fileset dir="${bcprov.location}/">
+	    <include name="bcprov.jar"/>
         </fileset>
 
         <pathelement location="${builddir}/classes"/>
