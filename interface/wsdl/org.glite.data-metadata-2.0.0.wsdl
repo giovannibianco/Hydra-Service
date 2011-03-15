@@ -1,0 +1,1369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" xmlns:intf="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://glite.org/wsdl/services/org.glite.data.catalog" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+ <wsdl:types>
+  <schema targetNamespace="http://glite.org/wsdl/services/org.glite.data.catalog" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="StringPair">
+    <sequence>
+     <element name="string1" nillable="true" type="soapenc:string"/>
+     <element name="string2" nillable="true" type="soapenc:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="CatalogException">
+    <sequence>
+     <element name="message" nillable="true" type="soapenc:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="InvalidArgumentException">
+    <complexContent>
+     <extension base="tns1:CatalogException">
+      <sequence/>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="InternalException">
+    <complexContent>
+     <extension base="tns1:CatalogException">
+      <sequence/>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="ExistsException">
+    <complexContent>
+     <extension base="tns1:CatalogException">
+      <sequence/>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="NotExistsException">
+    <complexContent>
+     <extension base="tns1:CatalogException">
+      <sequence/>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="AuthorizationException">
+    <complexContent>
+     <extension base="tns1:CatalogException">
+      <sequence/>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="Attribute">
+    <sequence>
+     <element name="name" nillable="true" type="soapenc:string"/>
+     <element name="value" nillable="true" type="soapenc:string"/>
+     <element name="type" nillable="true" type="soapenc:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="Perm">
+    <sequence>
+     <element name="permission" type="xsd:boolean"/>
+     <element name="remove" type="xsd:boolean"/>
+     <element name="read" type="xsd:boolean"/>
+     <element name="write" type="xsd:boolean"/>
+     <element name="list" type="xsd:boolean"/>
+     <element name="execute" type="xsd:boolean"/>
+     <element name="getMetadata" type="xsd:boolean"/>
+     <element name="setMetadata" type="xsd:boolean"/>
+    </sequence>
+   </complexType>
+   <complexType name="BasicPermission">
+    <sequence>
+     <element name="userName" nillable="true" type="soapenc:string"/>
+     <element name="groupName" nillable="true" type="soapenc:string"/>
+     <element name="userPerm" nillable="true" type="tns1:Perm"/>
+     <element name="groupPerm" nillable="true" type="tns1:Perm"/>
+     <element name="otherPerm" nillable="true" type="tns1:Perm"/>
+    </sequence>
+   </complexType>
+   <complexType name="ACLEntry">
+    <sequence>
+     <element name="principalPerm" nillable="true" type="tns1:Perm"/>
+     <element name="principal" nillable="true" type="soapenc:string"/>
+    </sequence>
+   </complexType>
+   <complexType name="Permission">
+    <complexContent>
+     <extension base="tns1:BasicPermission">
+      <sequence>
+       <element maxOccurs="unbounded" name="acl" nillable="true" type="tns1:ACLEntry"/>
+      </sequence>
+     </extension>
+    </complexContent>
+   </complexType>
+   <complexType name="PermissionEntry">
+    <sequence>
+     <element name="item" nillable="true" type="soapenc:string"/>
+     <element name="permission" nillable="true" type="tns1:Permission"/>
+    </sequence>
+   </complexType>
+  </schema>
+  <schema targetNamespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="ArrayOf_tns1_StringPair">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:StringPair[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="ArrayOf_soapenc_string">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="soapenc:string[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="ArrayOf_tns1_Attribute">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:Attribute[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+   <complexType name="ArrayOf_tns1_PermissionEntry">
+    <complexContent>
+     <restriction base="soapenc:Array">
+      <attribute ref="soapenc:arrayType" wsdl:arrayType="tns1:PermissionEntry[]"/>
+     </restriction>
+    </complexContent>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="getInterfaceVersionResponse">
+
+      <wsdl:part name="getInterfaceVersionReturn" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="checkPermissionResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="queryResponse">
+
+      <wsdl:part name="queryReturn" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createEntryRequest">
+
+      <wsdl:part name="entries" type="impl:ArrayOf_tns1_StringPair"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getAttributesResponse">
+
+      <wsdl:part name="getAttributesReturn" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="clearAttributesRequest">
+
+      <wsdl:part name="item" type="soapenc:string"/>
+
+      <wsdl:part name="attributeNames" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getSchemaVersionResponse">
+
+      <wsdl:part name="getSchemaVersionReturn" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="setPermissionResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="setAttributesResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="ExistsException">
+
+      <wsdl:part name="fault" type="tns1:ExistsException"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getSchemaVersionRequest">
+
+   </wsdl:message>
+
+   <wsdl:message name="listSchemasResponse">
+
+      <wsdl:part name="listSchemasReturn" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createSchemaRequest">
+
+      <wsdl:part name="schemaName" type="soapenc:string"/>
+
+      <wsdl:part name="attributes" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createEntryResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="listAttributesRequest">
+
+      <wsdl:part name="item" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryRequest">
+
+      <wsdl:part name="query" type="soapenc:string"/>
+
+      <wsdl:part name="type" type="soapenc:string"/>
+
+      <wsdl:part name="limit" type="xsd:int"/>
+
+      <wsdl:part name="offset" type="xsd:int"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listSchemasRequest">
+
+   </wsdl:message>
+
+   <wsdl:message name="createSchemaResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="InternalException">
+
+      <wsdl:part name="fault" type="tns1:InternalException"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="describeSchemaResponse">
+
+      <wsdl:part name="describeSchemaReturn" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getServiceMetadataRequest">
+
+      <wsdl:part name="key" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="addSchemaAttributesRequest">
+
+      <wsdl:part name="schemaName" type="soapenc:string"/>
+
+      <wsdl:part name="attributes" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeSchemaAttributesRequest">
+
+      <wsdl:part name="schemaName" type="soapenc:string"/>
+
+      <wsdl:part name="attributeNames" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="checkPermissionRequest">
+
+      <wsdl:part name="items" type="impl:ArrayOf_soapenc_string"/>
+
+      <wsdl:part name="perm" type="tns1:Perm"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeEntryRequest">
+
+      <wsdl:part name="items" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="setPermissionRequest">
+
+      <wsdl:part name="permissions" type="impl:ArrayOf_tns1_PermissionEntry"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getInterfaceVersionRequest">
+
+   </wsdl:message>
+
+   <wsdl:message name="addSchemaAttributesResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="InvalidArgumentException">
+
+      <wsdl:part name="fault" type="tns1:InvalidArgumentException"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getVersionResponse">
+
+      <wsdl:part name="getVersionReturn" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeEntryResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="clearAttributesResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="setAttributesRequest">
+
+      <wsdl:part name="item" type="soapenc:string"/>
+
+      <wsdl:part name="attributes" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listAttributesResponse">
+
+      <wsdl:part name="listAttributesReturn" type="impl:ArrayOf_tns1_Attribute"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getServiceMetadataResponse">
+
+      <wsdl:part name="getServiceMetadataReturn" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getVersionRequest">
+
+   </wsdl:message>
+
+   <wsdl:message name="dropSchemaRequest">
+
+      <wsdl:part name="schemaName" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getPermissionResponse">
+
+      <wsdl:part name="getPermissionReturn" type="impl:ArrayOf_tns1_PermissionEntry"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="NotExistsException">
+
+      <wsdl:part name="fault" type="tns1:NotExistsException"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getPermissionRequest">
+
+      <wsdl:part name="items" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getAttributesRequest">
+
+      <wsdl:part name="item" type="soapenc:string"/>
+
+      <wsdl:part name="attributeNames" type="impl:ArrayOf_soapenc_string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeSchemaAttributesResponse">
+
+   </wsdl:message>
+
+   <wsdl:message name="AuthorizationException">
+
+      <wsdl:part name="fault" type="tns1:AuthorizationException"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="describeSchemaRequest">
+
+      <wsdl:part name="schemaName" type="soapenc:string"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="dropSchemaResponse">
+
+   </wsdl:message>
+
+   <wsdl:portType name="MetadataCatalog">
+
+      <wsdl:operation name="createEntry" parameterOrder="entries">
+
+         <wsdl:input message="impl:createEntryRequest" name="createEntryRequest"/>
+
+         <wsdl:output message="impl:createEntryResponse" name="createEntryResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:ExistsException" name="ExistsException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeEntry" parameterOrder="items">
+
+         <wsdl:input message="impl:removeEntryRequest" name="removeEntryRequest"/>
+
+         <wsdl:output message="impl:removeEntryResponse" name="removeEntryResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getAttributes" parameterOrder="item attributeNames">
+
+         <wsdl:input message="impl:getAttributesRequest" name="getAttributesRequest"/>
+
+         <wsdl:output message="impl:getAttributesResponse" name="getAttributesResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query" parameterOrder="query type limit offset">
+
+         <wsdl:input message="impl:queryRequest" name="queryRequest"/>
+
+         <wsdl:output message="impl:queryResponse" name="queryResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setAttributes" parameterOrder="item attributes">
+
+         <wsdl:input message="impl:setAttributesRequest" name="setAttributesRequest"/>
+
+         <wsdl:output message="impl:setAttributesResponse" name="setAttributesResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="clearAttributes" parameterOrder="item attributeNames">
+
+         <wsdl:input message="impl:clearAttributesRequest" name="clearAttributesRequest"/>
+
+         <wsdl:output message="impl:clearAttributesResponse" name="clearAttributesResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listAttributes" parameterOrder="item">
+
+         <wsdl:input message="impl:listAttributesRequest" name="listAttributesRequest"/>
+
+         <wsdl:output message="impl:listAttributesResponse" name="listAttributesResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getVersion">
+
+         <wsdl:input message="impl:getVersionRequest" name="getVersionRequest"/>
+
+         <wsdl:output message="impl:getVersionResponse" name="getVersionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getSchemaVersion">
+
+         <wsdl:input message="impl:getSchemaVersionRequest" name="getSchemaVersionRequest"/>
+
+         <wsdl:output message="impl:getSchemaVersionResponse" name="getSchemaVersionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getInterfaceVersion">
+
+         <wsdl:input message="impl:getInterfaceVersionRequest" name="getInterfaceVersionRequest"/>
+
+         <wsdl:output message="impl:getInterfaceVersionResponse" name="getInterfaceVersionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getServiceMetadata" parameterOrder="key">
+
+         <wsdl:input message="impl:getServiceMetadataRequest" name="getServiceMetadataRequest"/>
+
+         <wsdl:output message="impl:getServiceMetadataResponse" name="getServiceMetadataResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createSchema" parameterOrder="schemaName attributes">
+
+         <wsdl:input message="impl:createSchemaRequest" name="createSchemaRequest"/>
+
+         <wsdl:output message="impl:createSchemaResponse" name="createSchemaResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:ExistsException" name="ExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addSchemaAttributes" parameterOrder="schemaName attributes">
+
+         <wsdl:input message="impl:addSchemaAttributesRequest" name="addSchemaAttributesRequest"/>
+
+         <wsdl:output message="impl:addSchemaAttributesResponse" name="addSchemaAttributesResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:ExistsException" name="ExistsException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeSchemaAttributes" parameterOrder="schemaName attributeNames">
+
+         <wsdl:input message="impl:removeSchemaAttributesRequest" name="removeSchemaAttributesRequest"/>
+
+         <wsdl:output message="impl:removeSchemaAttributesResponse" name="removeSchemaAttributesResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="dropSchema" parameterOrder="schemaName">
+
+         <wsdl:input message="impl:dropSchemaRequest" name="dropSchemaRequest"/>
+
+         <wsdl:output message="impl:dropSchemaResponse" name="dropSchemaResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listSchemas">
+
+         <wsdl:input message="impl:listSchemasRequest" name="listSchemasRequest"/>
+
+         <wsdl:output message="impl:listSchemasResponse" name="listSchemasResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="describeSchema" parameterOrder="schemaName">
+
+         <wsdl:input message="impl:describeSchemaRequest" name="describeSchemaRequest"/>
+
+         <wsdl:output message="impl:describeSchemaResponse" name="describeSchemaResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="checkPermission" parameterOrder="items perm">
+
+         <wsdl:input message="impl:checkPermissionRequest" name="checkPermissionRequest"/>
+
+         <wsdl:output message="impl:checkPermissionResponse" name="checkPermissionResponse"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getPermission" parameterOrder="items">
+
+         <wsdl:input message="impl:getPermissionRequest" name="getPermissionRequest"/>
+
+         <wsdl:output message="impl:getPermissionResponse" name="getPermissionResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setPermission" parameterOrder="permissions">
+
+         <wsdl:input message="impl:setPermissionRequest" name="setPermissionRequest"/>
+
+         <wsdl:output message="impl:setPermissionResponse" name="setPermissionResponse"/>
+
+         <wsdl:fault message="impl:InvalidArgumentException" name="InvalidArgumentException"/>
+
+         <wsdl:fault message="impl:InternalException" name="InternalException"/>
+
+         <wsdl:fault message="impl:NotExistsException" name="NotExistsException"/>
+
+         <wsdl:fault message="impl:AuthorizationException" name="AuthorizationException"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="MetadataCatalogSoapBinding" type="impl:MetadataCatalog">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="createEntry">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="createEntryRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="createEntryResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="ExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeEntry">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeEntryRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeEntryResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="queryRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="queryResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="setAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="setAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="clearAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="clearAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="clearAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="listAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="listAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getVersion">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getVersionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getVersionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getSchemaVersion">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getSchemaVersionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getSchemaVersionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getInterfaceVersion">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getInterfaceVersionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getInterfaceVersionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getServiceMetadata">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getServiceMetadataRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getServiceMetadataResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createSchema">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="createSchemaRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="createSchemaResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="ExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="addSchemaAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="addSchemaAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="addSchemaAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="ExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeSchemaAttributes">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeSchemaAttributesRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeSchemaAttributesResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="dropSchema">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="dropSchemaRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="dropSchemaResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listSchemas">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="listSchemasRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="listSchemasResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="describeSchema">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="describeSchemaRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="describeSchemaResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="checkPermission">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="checkPermissionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="checkPermissionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getPermission">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getPermissionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getPermissionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="setPermission">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="setPermissionRequest">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="setPermissionResponse">
+
+            <wsdlsoap:body namespace="http://glite.org/wsdl/services/org.glite.data.catalog.service.meta" use="literal"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="InvalidArgumentException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="InternalException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="NotExistsException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+         <wsdl:fault name="AuthorizationException">
+
+            <wsdlsoap:fault use="literal"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="MetadataCatalogService">
+
+      <wsdl:port binding="impl:MetadataCatalogSoapBinding" name="MetadataCatalog">
+
+         <wsdlsoap:address location="https://localhost:8443/glite-data-catalog-interface/MetadataCatalog"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

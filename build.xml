@@ -9,99 +9,106 @@
     Build file for the gLite Hydra Keystore.
 
     Authors: FROHNER Ákos <Akos.Frohner@cern.ch>
+    		 Joni Hahkala <joni.hahkala@cern.ch>
 -->
 <project name="hydra-service" default="webapp">
     
+    <!-- version numbers -->
+    <property file="VERSION"/>
+
+	<!-- force compilation to jdk1.5 compatibility -->
+	
+<!--	<property name="jdk.target.version.force" value="1.5" /> -->
     <!-- locations -->
-    <property environment="env"/>
-    <!-- optional property file for non-default locations -->
-    <property file="location.properties"/>
+    
+	<property name="workspace.dir" value=".." />
+	<property name="project-name" value="hydra-service" />
+	<property name="jar.name" value="${project-name}" />
+
+	<property name="stage.path" value="${workspace.dir}/stage" />
+	<property name="stage.java.share.path" value="${stage.path}/usr/share/java" />
+	<property name="system.java.share.path" value="/usr/share/java" />
+
+	<property name="module.package.name" value="${project-name}" />
+	<property name="prefix" value="tmp-prefix" />
+	<property name="package.prefix" value="${prefix}" />
+	<property name="package.javadoc.path" value="${package.prefix}/usr/share/doc/${module.package.name}/html" />
+	<property name="package.doc.path" value="${package.prefix}/usr/share/doc/${module.package.name}" />
+	<property name="package.java.share.path" value="${package.prefix}/usr/share/java" />
+	<property name="package.templates.path" value="${package.prefix}/var/lib/${project-name}" />
+	<property name="package.etc.path" value="${package.prefix}/etc/${project-name}" />
+
     <!-- using defaults, if no specific location is set -->
-    <condition property="glite.location" value="/opt/glite">
-        <not>
-            <isset property="env.GLITE_LOCATION"/>
-        </not>
-    </condition>
-    <condition property="glite.location" value="${env.GLITE_LOCATION}">
-        <isset property="env.GLITE_LOCATION"/>
-    </condition>
-    <condition property="util-java.location" value="${glite.location}">
-        <not>
-            <isset property="util-java.location"/>
-        </not>
-    </condition>
-    <condition property="trustmanager.location" value="${glite.location}">
-        <not>
-            <isset property="trustmanager.location"/>
-        </not>
-    </condition>
-    <property name="builddir" value="${basedir}/build"/>
-    <property name="testdir" value="${basedir}/build/test"/>
+    <property name="log4j.location" value="${system.java.share.path}"/>
+    <property name="bouncycastle.location" value="${system.java.share.path}"/>
+    <property name="trustmanager.location" value="${stage.java.share.path}"/>
+    <property name="trustmanager-axis.location" value="${stage.java.share.path}"/>
+    <property name="voms-java.location" value="${stage.java.share.path}"/>
+	<property name="tomcat.location" value="${system.java.share.path}"/>
+    <property name="axis.location" value="${system.java.share.path}"/>
+    <property name="junit.location" value="${system.java.share.path}"/>
+	<property name="mm-mysql.location" value="${stage.java.share.path}"/>
+	<property name="jug.location" value="${stage.java.share.path}"/>
+	
+    <property name="builddir" value="build"/>
+    <property name="testdir" value="build/test"/>
+    <property name="certdir" value="${stage.path}/share/test/certificates"/>
 
     <!-- dumping the most important locations for later use -->
-    <target  name="configure">
+    <target name="configure">
         <echo message="VERSION               =${VERSION}"/>
         <echo message="INTERFACE_VERSION     =${INTERFACE_VERSION}"/>
-
-        <echo message="glite.location        =${glite.location}"/>
-        <echo message="axis.location         =${axis.location}"/>
-        <echo message="tomcat.location       =${tomcat.location}"/>
-        <echo message="mm-mysql.location     =${mm-mysql.location}"/>
-        <echo message="log4j.location        =${log4j.location}"/>
-        <echo message="jug.location          =${jug.location}"/>
-        <echo message="bcprov.location       =${bcprov.location}"/>
-        <echo message="util-java.location    =${util-java.location}"/>
-        <echo message="trustmanager.location =${trustmanager.location}"/>
-        <echo file="location.properties">
-glite.location        =${glite.location}
-axis.location         =${axis.location}
-tomcat.location       =${tomcat.location}
-mm-mysql.location     =${mm-mysql.location}
-log4j.location        =${log4j.location}
-jug.location          =${jug.location}
-bcprov.location       =${bcprov.location}
-util-java.location    =${util-java.location}
-trustmanager.location =${trustmanager.location}
-        </echo>
+        <echo message="SCHEMA_VERSION        =${SCHEMA_VERSION}"/>
+        <echo message="log4j.location                =${log4j.location}"/>
+        <echo message="bouncycastle.location         =${bouncycastle.location}"/>
+        <echo message="trustmanager.location         =${trustmanager.location}"/>
+        <echo message="trustmanager-axis.location    =${trustmanager-axis.location}"/>
+        <echo message="voms-java.location            =${voms-java.location}"/>
+        <echo message="tomcat.location               =${tomcat.location}"/>
+        <echo message="axis.location                 =${axis.location}"/>
+        <echo message="mm-mysql.location             =${mm-mysql.location}"/>
+        <echo message="jug.location                  =${jug.location}"/>
     </target>
 
     <!-- for Java code generation from a WSDL -->
     <taskdef resource="axis-tasks.properties">
         <classpath>
             <fileset dir="${axis.location}/">
-                <include name="*.jar"/>
+                <include name="**/*.jar"/>
             </fileset>
         </classpath>
     </taskdef>
-
-
-    <!-- version numbers -->
-    <property file="${basedir}/VERSION"/>
-    <property name="NAME" value="glite-data-hydra-service"/>
 
     <path id="compile.classpath">
         <fileset dir="${log4j.location}">
             <include name="**/log4j*.jar"/>
         </fileset>
         <fileset dir="${axis.location}/">
-            <include name="axis.jar"/>
-            <include name="jaxrpc.jar"/>
+            <include name="**/axis*.jar"/>
+            <include name="**/jaxrpc*.jar"/>
         </fileset>
-        <fileset dir="${jug.location}">
-            <include name="**/jug.jar"/>
+        <fileset dir="${tomcat.location}/">
+        	<include name="**/*dbcp*.jar"/>
+            <include name="**/*servlet*-api*.jar"/>        	
         </fileset>
-        <fileset dir="${tomcat.location}/common/lib">
-            <include name="servlet-api.jar"/>
+        <fileset dir="${trustmanager.location}/">
+            <include name="**/trustmanager.jar"/>
+       </fileset>
+        <fileset dir="${trustmanager-axis.location}/">
+            <include name="**/trustmanager-axis.jar"/>
+       </fileset>
+        <fileset dir="${voms-java.location}/">
+            <include name="**/vomsjapi.jar"/>
         </fileset>
-
-        <fileset dir="${util-java.location}/share/java">
-            <include name="glite-security-util-java.jar"/>
+        <fileset dir="${bouncycastle.location}/">
+            <include name="**/bcprov.jar"/>
         </fileset>
-        <fileset dir="${bcprov.location}/">
-	    <include name="bcprov.jar"/>
+        <fileset dir="${mm-mysql.location}/">
+            <include name="**/bcprov.jar"/>
         </fileset>
-
-        <pathelement location="${builddir}/classes"/>
+        <fileset dir="${jug.location}/">
+            <include name="**/bcprov.jar"/>
+        </fileset>
         <pathelement location="${builddir}/soap/classes"/>
     </path>
 
@@ -110,7 +117,7 @@ trustmanager.location =${trustmanager.location}
         <filter token="INTERFACE_VERSION" value="${INTERFACE_VERSION}"/>
     </filterset>
 
-    <target name="init">
+    <target name="init" depends="configure">
         <mkdir dir="${builddir}"/>
         <mkdir dir="${builddir}/classes"/>
         <mkdir dir="${builddir}/soap/src"/>
@@ -119,18 +126,20 @@ trustmanager.location =${trustmanager.location}
 
     <target name="clean">
         <delete dir="${builddir}"/>
+        <delete dir="${package.prefix}"/>
         <delete dir="${testdir}"/>
+    	<delete dir="lib"/>
     </target>
 
     <target name="webapp.soap.generate.check" depends="init">
         <uptodate property="webapp.soap.generate.skip"
-            srcfile="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
+            srcfile="interface/wsdl/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
             targetfile="${builddir}/soap/src/org/glite/data/hydra/MetadataCatalog.java"/>
     </target>
     <target name="webapp.soap.generate" 
         depends="init,webapp.soap.generate.check"
         unless="webapp.soap.generate.skip">
-        <axis-wsdl2java url="${glite.location}/interface/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
+        <axis-wsdl2java url="interface/wsdl/org.glite.data-metadata-${INTERFACE_VERSION}.wsdl"
             testcase="false" verbose="true" serverside="true"
             skeletondeploy="true" deployscope="Application"
             output="${builddir}/soap/src">
@@ -148,8 +157,8 @@ trustmanager.location =${trustmanager.location}
             in="${builddir}/soap/src/org/glite/data/hydra/deploy.wsdd"
             out="${builddir}/soap/src/org/glite/data/hydra/deploy.wsdd.service"/>
         <concat destfile="${builddir}/webapp/WEB-INF/server-config.wsdd">
-            <header filtering="false" file="${basedir}/project/server-config.wsdd.header"/>
-            <footer filtering="false" file="${basedir}/project/server-config.wsdd.footer"/>
+            <header filtering="false" file="project/server-config.wsdd.header"/>
+            <footer filtering="false" file="project/server-config.wsdd.footer"/>
             <fileset dir="${builddir}/soap/src" includes="**/deploy.wsdd.service"/>
             <filterchain>
                 <tokenfilter>
@@ -194,7 +203,6 @@ trustmanager.location =${trustmanager.location}
 
     <target name="webapp.soap.compile" 
         depends="init, webapp.soap.generate, webapp.soap.fixsrc">
-        <mkdir dir="${builddir}/soap/classes"/>
         <javac srcdir="${builddir}/soap/src" 
                destdir="${builddir}/soap/classes"
                debug="true"
@@ -213,12 +221,11 @@ trustmanager.location =${trustmanager.location}
     </target>
 
     <target name="compile" depends="init, webapp.soap.compile">
-        <mkdir dir="${builddir}/classes"/>
-        <javac srcdir="${basedir}/src" 
+        <javac srcdir="src" 
                destdir="${builddir}/classes"
                debug="true"
                deprecation="true">
-            <classpath refid="compile.classpath"/>
+				<classpath refid="compile.classpath"/>
         </javac>
     </target>
 
@@ -243,13 +250,17 @@ trustmanager.location =${trustmanager.location}
         <!-- dependencies -->
         <copy toDir="${builddir}/webapp/WEB-INF/lib" flatten="true">
             <fileset dir="${axis.location}/">
-                <include name="*.jar"/>
+                <include name="**/axis*.jar"/>
+                <include name="**/jaxrpc*.jar"/>
             </fileset>
-            <fileset dir="${util-java.location}/share/java">
-                <include name="glite-security-util-java.jar"/>
+            <fileset dir="${trustmanager.location}">
+                <include name="trustmanager.jar"/>
             </fileset>
-            <fileset dir="${bcprov.location}/jars">
-                <include name="bcprov-jdk14-122.jar"/>
+            <fileset dir="${trustmanager-axis.location}">
+                <include name="trustmanager-axis.jar"/>
+            </fileset>
+            <fileset dir="${bouncycastle.location}">
+                <include name="bcprov*.jar"/>
             </fileset>
             <fileset dir="${jug.location}">
                 <include name="**/jug.jar"/>
@@ -280,7 +291,7 @@ trustmanager.location =${trustmanager.location}
 
     <target name="webapp.war" depends="init, webapp">
         <mkdir dir="${builddir}/share/java"/>
-        <war destfile="${builddir}/share/java/${NAME}.war"
+        <war destfile="${builddir}/share/java/${jar.name}.war"
             webxml="${builddir}/webapp/WEB-INF/web.xml" update="true">
             <fileset dir="${builddir}/webapp" excludes="**/WEB-INF/**"/>
             <lib dir="${builddir}/webapp/WEB-INF/lib"/>
@@ -288,6 +299,12 @@ trustmanager.location =${trustmanager.location}
             <webinf dir="${builddir}/webapp/WEB-INF" includes="server-config.wsdd"/>
         </war>
     </target>
+	
+	<target name="jar" depends="webapp">
+		<mkdir dir="lib"/>
+		<jar destfile="lib/${jar.name}.jar" basedir="${builddir}/webapp/WEB-INF/classes"
+		     includes="**/*.*"/>
+	</target>
 
     <target name="webapp.doc.check" depends="init">
         <uptodate  property="webapp.doc.skip"
@@ -311,28 +328,26 @@ trustmanager.location =${trustmanager.location}
     </target>
 
 
-    <target name="install" depends="init,webapp.war">
-        
-        <mkdir dir="${prefix}"/>
+    <target name="install" depends="init,webapp.war,jar">
 
-		<mkdir dir="${prefix}/share/java" />
+		<mkdir dir="${package.java.share.path}" />
 
-		<copy toDir="${prefix}/share/java">
+		<copy toDir="${package.java.share.path}">
 			<fileset dir="${builddir}/share/java">
 				<include name="*.war" />
 			</fileset>
 		</copy>
 	
-		<mkdir dir="${prefix}/share/doc/${NAME}" />
-		<copy toDir="${prefix}/share/doc/${NAME}">
-			<fileset dir="${basedir}">
+		<mkdir dir="${package.doc.path}" />
+		<copy toDir="${package.doc.path}">
+			<fileset dir=".">
 				<include name="LICENSE" />
 				<include name="RELEASE-NOTES" />
 				<include name="VERSION" />
 			</fileset>
 		</copy>
-        <mkdir dir="${prefix}/etc/${NAME}"/>
-		<copy todir="${prefix}/etc/${NAME}">
+        <mkdir dir="${package.etc.path}"/>
+		<copy todir="${package.etc.path}">
 			<fileset dir="config">
 				<include name="context.template.xml" />
                 <include name="log4j.template.properties"/>
@@ -341,25 +356,36 @@ trustmanager.location =${trustmanager.location}
 			</fileset>
 		</copy>
 		<copy file="config/config.properties"
-              tofile="${prefix}/etc/${NAME}/config.properties.example"/>
-		<copy todir="${prefix}/etc/${NAME}">
+              tofile="${package.etc.path}/config.properties.example"/>
+		<copy todir="${package.etc.path}">
 			<fileset dir="config">
 				<include name="info-provider" />
                 <include name="configure"/>
 			</fileset>
             <filterset refid="module.filters"/>
 		</copy>
-        <chmod file="${prefix}/etc/${NAME}/configure" perm="ugo+rx"/>
-        <chmod file="${prefix}/etc/${NAME}/info-provider" perm="ugo+rx"/>
+        <chmod file="${package.etc.path}/configure" perm="ugo+rx"/>
+        <chmod file="${package.etc.path}/info-provider" perm="ugo+rx"/>
     </target>
+	
+	<target name="stage" depends="install">
+		<mkdir dir="${stage.path}"/>
+		<copy todir="${stage.path}">
+			<fileset dir="${package.prefix}">
+				<include name="**/*.*" />
+			</fileset>
+		</copy>
+		<copy todir="${stage.java.share.path}" file="lib/${jar.name}.jar"/>
+	</target>
+			
 
     <target name="tar">
         <antcall target="install">
-			<param name="prefix" value="${builddir}/tar"/>
+			<param name="package.prefix" value="${builddir}/tar"/>
 		</antcall>
-        <mkdir dir="${basedir}/tgz"/>
+        <mkdir dir="tgz"/>
         <exec executable="tar" dir="${builddir}/tar">
-            <arg line="-czf ${basedir}/tgz/${NAME}-${VERSION}.tar.gz ." />
+            <arg line="-czf tgz/${NAME}-${VERSION}.tar.gz ." />
         </exec>
     </target>
 
@@ -417,7 +443,7 @@ trustmanager.location =${trustmanager.location}
         <move file="${tomcat.testdir}/conf/server.xml"
             tofile="${tomcat.testdir}/conf/server-original.xml"/>
 
-        <copy file="${basedir}/test/server.template.xml" 
+        <copy file="test/server.template.xml" 
             toFile="${tomcat.testdir}/conf/server.xml" overwrite="true">
             <filterset>
                 <filter token="PORT" value="8443"/>
@@ -425,7 +451,7 @@ trustmanager.location =${trustmanager.location}
                 <filter token="CRLFILES" value="${builddir}/certs/grid-security/certificates/*.r0"/>
                 <filter token="SSLCERTFILE" value="${builddir}/certs/grid-security/hostcert.pem"/>
                 <filter token="SSLKEY" value="${builddir}/certs/grid-security/hostkey.pem"/>
-                <filter token="LOG4JCONF" value="${basedir}/test/log4j-trustmanager.properties"/> 
+                <filter token="LOG4JCONF" value="test/log4j-trustmanager.properties"/> 
             </filterset>
         </copy>
 
@@ -475,10 +501,10 @@ trustmanager.location =${trustmanager.location}
     </target>
 
     <target name="test.configure" depends="webapp,certs.generate,tomcat.configure">
-        <exec dir="${builddir}" executable="${basedir}/config/configure">
+        <exec dir="${builddir}" executable="config/configure">
             <env key="CATALINA_BASE" value="${tomcat.testdir}"/>
-            <env key="CONFIGFILE" value="${basedir}/test/config.properties"/>
-            <env key="CONFIGDIR" value="${basedir}/config"/>
+            <env key="CONFIGFILE" value="test/config.properties"/>
+            <env key="CONFIGDIR" value="config"/>
             <env key="DOCBASE" value="${builddir}/webapp"/>
             <env key="VOMSDIR" value="${builddir}/certs/grid-security/vomsdir"/>
             <env key="HOSTNAME" value="localhost"/>

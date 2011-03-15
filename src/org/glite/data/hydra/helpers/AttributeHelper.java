@@ -24,11 +24,11 @@ public abstract class AttributeHelper extends MetadataHelper {
     }
 
     public void setAttributes(String entry, Attribute[] attributes)
-        throws NotExistsException, InternalException {
+        throws NotExistsException, InternalException {//
     }
 
     public void clearAttributes(String entry, String[] attributeNames)
-        throws NotExistsException, InternalException {
+        throws NotExistsException, InternalException {//
     }
 
     public String[] query(String query, String type, int limit, int offset)

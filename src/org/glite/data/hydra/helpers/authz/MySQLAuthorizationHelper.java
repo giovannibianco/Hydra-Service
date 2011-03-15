@@ -26,9 +26,9 @@ import org.glite.data.hydra.helpers.AuthorizationHelper;
 
 import org.glite.security.SecurityContext;
 import org.glite.security.util.DNHandler;
-import org.glite.security.voms.VOMSAttribute;
-import org.glite.security.voms.VOMSValidator;
-import org.glite.security.voms.BasicVOMSTrustStore;
+import org.glite.voms.VOMSAttribute;
+import org.glite.voms.VOMSValidator;
+import org.glite.voms.BasicVOMSTrustStore;
 import org.glite.security.util.axis.InitSecurityContext;
 
 import java.sql.Connection;
@@ -554,7 +554,7 @@ public class MySQLAuthorizationHelper extends AuthorizationHelper {
         try {
             SecurityContext sc = SecurityContext.getCurrentContext();
             
-            List vomsCerts = sc.getVOMSValidator().validate().getVOMSAttributes();
+            List vomsCerts = new VOMSValidator(sc.getClientCertChain()).validate().getVOMSAttributes();
             m_log.debug("getAuthzAttributeList voms cert number: " + vomsCerts.size());
 
             for (int i = 0; i < vomsCerts.size(); i++) {
