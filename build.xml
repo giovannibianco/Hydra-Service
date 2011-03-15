@@ -68,7 +68,7 @@ trustmanager.location =${trustmanager.location}
     <!-- for Java code generation from a WSDL -->
     <taskdef resource="axis-tasks.properties">
         <classpath>
-            <fileset dir="${axis.location}/lib">
+            <fileset dir="${axis.location}/">
                 <include name="*.jar"/>
             </fileset>
         </classpath>
@@ -83,7 +83,7 @@ trustmanager.location =${trustmanager.location}
         <fileset dir="${log4j.location}">
             <include name="**/log4j*.jar"/>
         </fileset>
-        <fileset dir="${axis.location}/lib">
+        <fileset dir="${axis.location}/">
             <include name="axis.jar"/>
             <include name="jaxrpc.jar"/>
         </fileset>
@@ -242,7 +242,7 @@ trustmanager.location =${trustmanager.location}
 
         <!-- dependencies -->
         <copy toDir="${builddir}/webapp/WEB-INF/lib" flatten="true">
-            <fileset dir="${axis.location}/lib">
+            <fileset dir="${axis.location}/">
                 <include name="*.jar"/>
             </fileset>
             <fileset dir="${util-java.location}/share/java">
