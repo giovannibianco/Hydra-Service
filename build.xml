@@ -11,7 +11,7 @@
     Authors: FROHNER Ákos <Akos.Frohner@cern.ch>
     		 Joni Hahkala <joni.hahkala@cern.ch>
 -->
-<project name="hydra-service" default="webapp">
+<project name="hydra-service" default="install">
     
     <!-- version numbers -->
     <property file="VERSION"/>
@@ -103,12 +103,12 @@
         <fileset dir="${bouncycastle.location}/">
             <include name="**/bcprov.jar"/>
         </fileset>
-        <fileset dir="${mm-mysql.location}/">
-            <include name="**/bcprov.jar"/>
-        </fileset>
+<!--        <fileset dir="${mm-mysql.location}/">
+            <include name="**/mysql*.jar"/>
+        </fileset> 
         <fileset dir="${jug.location}/">
             <include name="**/bcprov.jar"/>
-        </fileset>
+        </fileset> -->
         <pathelement location="${builddir}/soap/classes"/>
     </path>
 
@@ -262,9 +262,9 @@
             <fileset dir="${bouncycastle.location}">
                 <include name="bcprov*.jar"/>
             </fileset>
-            <fileset dir="${jug.location}">
+<!--            <fileset dir="${jug.location}">
                 <include name="**/jug.jar"/>
-            </fileset>
+            </fileset>-->
         </copy>
 
         <!-- implemenetation -->
