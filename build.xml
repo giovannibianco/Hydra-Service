@@ -457,11 +457,11 @@
 
         <copy toDir="${tomcat.testdir}/server/lib" flatten="true">
             <fileset dir="${util-java.location}/share/java">
-                <include name="glite-security-util-java.jar"/>
-                <include name="glite-security-trustmanager.jar"/>
+                <include name="trustmanager-axis.jar"/>
+                <include name="trustmanager.jar"/>
             </fileset>
             <fileset dir="${bcprov.location}/jars">
-                <include name="bcprov-jdk14-122.jar"/>
+                <include name="bcprov*.jar"/>
             </fileset>
             <fileset dir="${log4j.location}">
                 <include name="**/log4j*.jar"/>
