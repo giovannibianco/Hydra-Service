@@ -5,7 +5,7 @@ Install Guide for the glite-data-hydra-service component.
    
    We assume tomcat5 and MySQL are installed at the usual locations,
    CA certificates, VOMS server certificates are at the proper locations
-   and Tomcat is configured to use them via the glite-security-trustmanager
+   and Tomcat is configured to use them via the trustmanager
    package.
 
 1. Simple Configuration
