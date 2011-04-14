@@ -68,6 +68,9 @@
         <echo message="axis.location                 =${axis.location}"/>
         <echo message="mm-mysql.location             =${mm-mysql.location}"/>
         <echo message="jug.location                  =${jug.location}"/>
+        <echo message="stage                 		 =${stage}"/>
+        <echo message="stage.java.share.path         =${stage.java.share.path}"/>
+        <echo message="system.java.share.path        =${system.java.share.path}"/>
     </target>
 
     <!-- for Java code generation from a WSDL -->
