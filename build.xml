@@ -25,7 +25,7 @@
 	<property name="project-name" value="hydra-service" />
 	<property name="jar.name" value="${project-name}" />
 
-	<property name="stage" value="${workspace.dir}/stage" />
+	<property name="stage" value="" />
 	<property name="stage.java.share.path" value="${stage}/usr/share/java" />
 	<property name="system.java.share.path" value="/usr/share/java" />
 
