@@ -30,7 +30,7 @@
 	<property name="system.java.share.path" value="/usr/share/java" />
 
 	<property name="module.package.name" value="${project-name}" />
-	<property name="prefix" value="tmp-prefix" />
+	<property name="prefix" value="." />
 	<property name="package.prefix" value="${prefix}" />
 	<property name="package.javadoc.path" value="${package.prefix}/usr/share/doc/${module.package.name}/html" />
 	<property name="package.doc.path" value="${package.prefix}/usr/share/doc/${module.package.name}" />
